@@ -64,7 +64,6 @@ function create_hadoop_user {
   sudo adduser hduser sudo
   sudo chsh -s /bin/bash hduser
   sudo passwd hduser
-  
 }
 
 function install_hadoop {
@@ -165,14 +164,111 @@ EOF
 
 
 function setup_environment {
-  export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4
-  sudo sed -i -- 's/JAVA_HOME=\${JAVA_HOME}/JAVA_HOME=\$(readlink -f \/usr\/bin\/java | sed "s:bin\/java::")/' $HADOOP_HOME/etc/hadoop/hadoop-env.sh
-  setup_profile
-  setup_core_xml
-  setup_mapred_xml
-  setup_hdfs_xml
-  sudo chown -R hduser $HADOOP_HOME
+
+echo "Now script is updating Bashrc for export Path etc"  
+
+cat >> ~/.bashrc << EOL  
+export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4 
+export HADOOP_MAPRED_HOME=/usr/local/hadoop/hadoop-2.7.4 
+export HADOOP_COMMON_HOME=/usr/local/hadoop/hadoop-2.7.4 
+export HADOOP_HDFS_HOME=/usr/local/hadoop/hadoop-2.7.4 
+export YARN_HOME=/usr/local/hadoop/hadoop-2.7.4 
+export HADOOP_COMMON_LIB_NATIVE_DIR=/usr/local/hadoop/hadoop-2.7.4/lib/native  
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle/  
+export PATH=$PATH:/usr/local/hadoop/hadoop-2.7.4/sbin:/usr/local/hadoop/hadoop-2.7.4/bin:$JAVA_PATH/bin  
+EOL  
+
+cat ~ / .bashrc  
+
+source ~ / .bashrc  
+
+echo "Now script is updating hadoop configuration files"  
+
+cat >> /usr/local/hadoop/hadoop-2.7.4/etc/hadoop/hadoop-env.sh << EOL  
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+EOL  
+
+
+
+cd /usr/local/hadoop/hadoop-2.7.4/etc/hadoop  
+
+cat > core-site.xml << EOL  
+<configuration>  
+<property>  
+<name>fs.default.name</name>  
+<value>hdfs://localhost:9000</value>  
+</property>  
+</configuration>  
+EOL  
+
+cp mapred-site.xml.template mapred-site.xml  
+cat > mapred-site.xml << EOL  
+<configuration>  
+<property>  
+<name>mapreduce.framework.name</name>  
+<value>yarn</value>  
+</property>  
+</configuration>  
+EOL  
+
+cat > yarn-site.xml << EOL  
+<configuration>  
+<property>  
+<name>yarn.nodemanager.aux-services</name>  
+<value>mapreduce_shuffle</value>  
+</property>  
+</configuration>  
+EOL  
+
+cat > hdfs-site.xml << EOL  
+<configuration>  
+<property>  
+<name>dfs.replication</name>  
+<value>1</value>  
+</property>  
+<property>  
+<name>dfs.name.dir</name>  
+<value>file:///home/hadoop/hadoopinfra/hdfs/namenode </value>  
+</property>  
+<property>  
+<name>dfs.data.dir</name>  
+<value>file:///home/hadoop/hadoopinfra/hdfs/datanode </value >  
+</property>  
+</configuration>  
+EOL  
+
+echo "Completed process Now Reloading Bash Profile...."  
+cd ~  
+
+echo "You may require reloading bash profile, you can reload using following command."  
+echo "source ~/.bashrc"  
+
+echo "To Start you need to format Name Node Once you can use following command."  
+echo "hdfs namenode -format"  
+
+echo "Hadoop configured. now you can start hadoop using following commands. "  
+echo "start-dfs.sh"  
+echo "start-yarn.sh"  
+
+echo "To stop hadoop use following scripts."  
+echo "stop-dfs.sh"  
+echo "stop-yarn.sh"  
+
+
+
+
+
+
+  #export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4
+  #sudo sed -i -- 's/JAVA_HOME=\${JAVA_HOME}/JAVA_HOME=\$(readlink -f \/usr\/bin\/java | sed "s:bin\/java::")/' $HADOOP_HOME/etc/hadoop/hadoop-env.sh
+  #setup_profile
+  #setup_core_xml
+  #setup_mapred_xml
+  #setup_hdfs_xml
+  #sudo chown -R hduser $HADOOP_HOME
 }
+
+clear
 
 confirm "Setup Data Drive 01? [y/N] " && setup_data_drive_01
 confirm "Setup Data Drive 16? [y/N] " && setup_data_drive_16
