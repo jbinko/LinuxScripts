@@ -18,7 +18,7 @@ confirm () {
 function setup_data_drive_01 {
 
   echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdc
-  sudo mkfs -t ext3 /dev/sdc1
+  sudo mkfs -t ext4 /dev/sdc1
   sudo mkdir /data
   sudo mount /dev/sdc1 /data
 }
@@ -67,7 +67,6 @@ function create_hadoop_user {
 	sudo adduser --ingroup hadoop hduser
 	sudo adduser hduser sudo
 	sudo chsh -s /bin/bash hduser
-	sudo passwd hduser  
 }
 
 function install_hadoop {
@@ -93,7 +92,7 @@ export YARN_HOME=/usr/local/hadoop
 export HADOOP_COMMON_LIB_NATIVE_DIR=/usr/local/hadoop/lib/native  
 EOL
 
-cat ~/.bashrc
+#cat ~/.bashrc
 
 source ~/.bashrc
 
@@ -104,7 +103,7 @@ cat >> /usr/local/hadoop/etc/hadoop/hadoop-env.sh << EOL
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 EOL
 
-cat /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+#cat /usr/local/hadoop/etc/hadoop/hadoop-env.sh
 
 
 echo "Now script is updating core-site.xml"  
@@ -150,9 +149,13 @@ cat >> /usr/local/hadoop/etc/hadoop/hdfs-site.xml << EOL
 </configuration>
 EOL
 
-sudo rm -rf /data/hadoop_store
+#sudo rm -rf /data/hadoop_store
 sudo chown hduser:hadoop -R /data/hadoop_store
 sudo chmod 777 -R /data/hadoop_store
+
+
+sudo mkdir -p /usr/local/hadoop/logs
+sudo chown hduser:hadoop -R /usr/local/hadoop/logs
 
 
 echo "Completed process Now Reloading Bash Profile...."  
