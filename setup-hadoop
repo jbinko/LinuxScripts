@@ -74,7 +74,7 @@ function install_hadoop {
 
 	wget http://www-us.apache.org/dist/hadoop/core/stable/hadoop-2.7.4.tar.gz
 	tar xfz hadoop-2.7.4.tar.gz
-	mv hadoop-2.7.0 /usr/local/hadoop
+	mv hadoop-2.7.4 /usr/local/hadoop
 }
 
 function setup_environment {
