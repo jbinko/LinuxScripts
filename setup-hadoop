@@ -73,101 +73,11 @@ function install_hadoop {
   sudo chown -R hduser /usr/local/hadoop
 }
 
-function setup_profile {
-  local file=/etc/profile.d/hadoop-init.sh
-  local tempfile=/tmp/hadoop_setup_sdfds.sh
-  sudo mkdir -p /tmp/hadoop
-  sudo chown hduser -R /tmp/hadoop
-  export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4
-  export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
-  cat >> $tempfile  <<EOT
-export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4
-export PATH=\$PATH:\$HADOOP_HOME/bin:\$HADOOP_HOME/sbin
-EOT
-  tempfile=/tmp/hadoop_setup_sdfds.sh
-  chmod +x $tempfile
-  sudo chown root $tempfile
-  sudo mv $tempfile $file
-}
-
-function setup_core_xml {
-  export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4
-  local tmpfile=/tmp/hadoop_fafsa.xml
-  local file=$HADOOP_HOME/etc/hadoop/core-site.xml
-  sudo rm -rf $file
-  cat >> $tmpfile <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-<configuration>
-<property>
-    <name>hadoop.tmp.dir</name>
-    <value>/tmp/hadooop</value>
-    <description>Temporary directories.</description>
-</property>
-
-<property>
-    <name>fs.default.name</name>
-    <value>hdfs://localhost:54310</value>
-    <description>A URI whose scheme and authority determine the FileSystem implementation. </description>
-</property>
-</configuration>
-
-EOF
-  tmpfile=/tmp/hadoop_fafsa.xml
-  sudo chown root $tmpfile
-  sudo mv $tmpfile $file
-}
-
-function setup_mapred_xml {
-  export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4
-  local tmpfile=/tmp/hadoop_mapred.xml
-  local file=$HADOOP_HOME/etc/hadoop/mapred-site.xml
-  sudo rm -rf $file
-  cat >> $tmpfile <<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-<configuration>
-<property>
-  <name>mapred.job.tracker</name>
-  <value>localhost:54311</value>
-  <description>The tracker of MapReduce</description>
-</property>
-</configuration>
-
-EOT
-  tmpfile=/tmp/hadoop_mapred.xml
-  sudo chown root $tmpfile
-  sudo mv $tmpfile $file
-}
-
-function setup_hdfs_xml {
-  export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4
-  local tmpfile=/tmp/hadoop_hdfs.xml
-  local file=$HADOOP_HOME/etc/hadoop/hdfs-site.xml
-  sudo rm -rf $file
-  cat >> $tmpfile <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-<configuration>
-<property>
-  <name>dfs.replication</name>
-  <value>1</value>
-  <description>Number of replication of hdfs</description>
-</property>
-</configuration>
-
-EOF
-  tmpfile=/tmp/hadoop_hdfs.xml
-  sudo chown root $tmpfile
-  sudo mv $tmpfile $file
-}
-
-
 function setup_environment {
 
 echo "Now script is updating Bashrc for export Path etc"  
 
-cat >> ~/.bashrc << EOL  
+cat >> ~/.bashrc << EOL
 export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4 
 export HADOOP_MAPRED_HOME=/usr/local/hadoop/hadoop-2.7.4 
 export HADOOP_COMMON_HOME=/usr/local/hadoop/hadoop-2.7.4 
@@ -176,7 +86,7 @@ export YARN_HOME=/usr/local/hadoop/hadoop-2.7.4
 export HADOOP_COMMON_LIB_NATIVE_DIR=/usr/local/hadoop/hadoop-2.7.4/lib/native  
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle/  
 export PATH=$PATH:/usr/local/hadoop/hadoop-2.7.4/sbin:/usr/local/hadoop/hadoop-2.7.4/bin:$JAVA_PATH/bin  
-EOL  
+EOL
 
 cat ~ / .bashrc  
 
@@ -184,43 +94,43 @@ source ~ / .bashrc
 
 echo "Now script is updating hadoop configuration files"  
 
-cat >> /usr/local/hadoop/hadoop-2.7.4/etc/hadoop/hadoop-env.sh << EOL  
+cat >> /usr/local/hadoop/hadoop-2.7.4/etc/hadoop/hadoop-env.sh << EOL
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle
-EOL  
+EOL
 
 
 
 cd /usr/local/hadoop/hadoop-2.7.4/etc/hadoop  
 
-cat > core-site.xml << EOL  
+cat > core-site.xml << EOL
 <configuration>  
 <property>  
 <name>fs.default.name</name>  
 <value>hdfs://localhost:9000</value>  
 </property>  
 </configuration>  
-EOL  
+EOL
 
 cp mapred-site.xml.template mapred-site.xml  
-cat > mapred-site.xml << EOL  
+cat > mapred-site.xml << EOL
 <configuration>  
 <property>  
 <name>mapreduce.framework.name</name>  
 <value>yarn</value>  
 </property>  
 </configuration>  
-EOL  
+EOL
 
-cat > yarn-site.xml << EOL  
+cat > yarn-site.xml << EOL
 <configuration>  
 <property>  
 <name>yarn.nodemanager.aux-services</name>  
 <value>mapreduce_shuffle</value>  
 </property>  
 </configuration>  
-EOL  
+EOL
 
-cat > hdfs-site.xml << EOL  
+cat > hdfs-site.xml << EOL
 <configuration>  
 <property>  
 <name>dfs.replication</name>  
@@ -235,7 +145,7 @@ cat > hdfs-site.xml << EOL
 <value>file:///home/hadoop/hadoopinfra/hdfs/datanode </value >  
 </property>  
 </configuration>  
-EOL  
+EOL
 
 echo "Completed process Now Reloading Bash Profile...."  
 cd ~  
@@ -253,19 +163,6 @@ echo "start-yarn.sh"
 echo "To stop hadoop use following scripts."  
 echo "stop-dfs.sh"  
 echo "stop-yarn.sh"  
-
-
-
-
-
-
-  #export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.4
-  #sudo sed -i -- 's/JAVA_HOME=\${JAVA_HOME}/JAVA_HOME=\$(readlink -f \/usr\/bin\/java | sed "s:bin\/java::")/' $HADOOP_HOME/etc/hadoop/hadoop-env.sh
-  #setup_profile
-  #setup_core_xml
-  #setup_mapred_xml
-  #setup_hdfs_xml
-  #sudo chown -R hduser $HADOOP_HOME
 }
 
 clear
