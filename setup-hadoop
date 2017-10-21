@@ -85,8 +85,7 @@ cat >> ~/.bashrc << EOL
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle/
 export HADOOP_HOME=/usr/local/hadoop
 export HADOOP_INSTALL=/usr/local/hadoop
-export PATH=$PATH:/usr/local/hadoop/bin
-export PATH=$PATH:/usr/local/hadoop/sbin
+export PATH=$PATH:/usr/local/hadoop/bin:/usr/local/hadoop/sbin
 export HADOOP_MAPRED_HOME=/usr/local/hadoop
 export HADOOP_COMMON_HOME=/usr/local/hadoop
 export HADOOP_HDFS_HOME=/usr/local/hadoop
@@ -151,7 +150,7 @@ cat >> /usr/local/hadoop/etc/hadoop/hdfs-site.xml << EOL
 </configuration>
 EOL
 
-rm -rf /data/hadoop_store
+sudo rm -rf /data/hadoop_store
 sudo chown hduser:hadoop -R /data/hadoop_store
 sudo chmod 777 -R /data/hadoop_store
 
@@ -166,14 +165,16 @@ echo "To Start you need to format Name Node Once you can use following command."
 echo "hdfs namenode -format"  
 
 echo "Hadoop configured. now you can start hadoop using following commands. "  
-echo "start-dfs.sh"  
-echo "start-yarn.sh"  
+echo "su hduser"  
+echo "cd /usr/local/hadoop/sbin"
+echo "./start-dfs.sh"  
+echo "./start-yarn.sh"  
 
 echo "To stop hadoop use following scripts."  
 echo "su hduser"  
-echo "cd /usr/local/hadoop/"
-echo "stop-dfs.sh"  
-echo "stop-yarn.sh"  
+echo "cd /usr/local/hadoop/sbin"
+echo "./stop-dfs.sh"  
+echo "./stop-yarn.sh"  
 echo "jps"  
 }
 
