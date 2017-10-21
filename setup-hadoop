@@ -74,7 +74,7 @@ function install_hadoop {
 
 	wget http://www-us.apache.org/dist/hadoop/core/stable/hadoop-2.7.4.tar.gz
 	tar xfz hadoop-2.7.4.tar.gz
-	mv hadoop-2.7.4 /usr/local/hadoop
+	sudo mv hadoop-2.7.4 /usr/local/hadoop
 }
 
 function setup_environment {
@@ -84,7 +84,7 @@ echo "Now script is updating Bashrc for export Path etc"
 cat >> ~/.bashrc << EOL
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle/
 export HADOOP_HOME=/usr/local/hadoop
-export HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_INSTALL=/usr/local/hadoop
 export PATH=$PATH:$HADOOP_INSTALL/bin
 export PATH=$PATH:$HADOOP_INSTALL/sbin
 export HADOOP_MAPRED_HOME=$HADOOP_INSTALL
