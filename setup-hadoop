@@ -12,10 +12,47 @@ confirm () {
       ;;
   esac
 }
+
+function setup_data_drive_01 {
+
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdc
+  sudo mkfs -t ext4 /dev/sdc1
+  sudo mkdir /data
+  sudo mount /dev/sdc1 /data
+}
+
+function setup_data_drive_16 {
+
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdc
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdd
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sde
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdf
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdg
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdh
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdi
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdj
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdk
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdl
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdm
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdn
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdo
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdp
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdq
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdr
+
+  sudo mdadm --create /dev/md127 --level 0 --raid-devices 16 /dev/sdc1 /dev/sdd1 /dev/sde1 /dev/sdf1 /dev/sdg1 /dev/sdh1 /dev/sdi1 /dev/sdj1 /dev/sdk1 /dev/sdl1 /dev/sdm1 /dev/sdn1 /dev/sdo1 /dev/sdp1 /dev/sdq1 /dev/sdr1
+  sudo mkfs -t ext4 /dev/md127
+
+  sudo mkdir /data
+  sudo mount /dev/md127 /data
+}
+
 function update_apt_repo  {
   sudo add-apt-repository ppa:webupd8team/java
   sudo apt-get update 
+  sudo apt-get install mdadm bonnie++ iozone3
 } 
+
 function install_java {
   sudo apt-get install oracle-java8-installer
   sudo apt-get install oracle-java8-set-default
@@ -29,6 +66,7 @@ function create_hadoop_user {
   sudo passwd hduser
   
 }
+
 function install_hadoop {
   sudo mkdir -p /usr/local/hadoop/
   cd /usr/local/hadoop
@@ -136,8 +174,10 @@ function setup_environment {
   sudo chown -R hduser $HADOOP_HOME
 }
 
+confirm "Setup Data Drive 01? [y/N] " && setup_data_drive_01
+confirm "Setup Data Drive 16? [y/N] " && setup_data_drive_16
 confirm "Update Repository? [y/N] " && update_apt_repo 
 confirm "Install Java? [y/N] " && install_java
 confirm "Create hadoop user? [y/N] " && create_hadoop_user
 confirm "Install hadoop? [y/N] " && install_hadoop 
-confirm "Setup Hadoop Environment" &&  setup_environment
+confirm "Setup Hadoop Environment? [y/N] " &&  setup_environment
