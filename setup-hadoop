@@ -167,6 +167,9 @@ echo "Now script is updating hdfs-site.xml"
 sudo mkdir -p /data/hadoop_store/hdfs/namenode
 sudo mkdir -p /data/hadoop_store/hdfs/datanode
 
+sudo mkdir -p /mnt/hadoop_store/hdfs/namenode
+sudo mkdir -p /mnt/hadoop_store/hdfs/datanode
+
 cat >> /usr/local/hadoop/etc/hadoop/hdfs-site.xml << EOL
 <configuration>
 <property><name>dfs.replication</name><value>1</value></property>
@@ -180,6 +183,8 @@ EOL
 sudo chown hduser:hadoop -R /data/hadoop_store
 sudo chmod 777 -R /data/hadoop_store
 
+sudo chown hduser:hadoop -R /mnt/hadoop_store
+sudo chmod 777 -R /mnt/hadoop_store
 
 sudo mkdir -p /usr/local/hadoop/logs
 sudo chown hduser:hadoop -R /usr/local/hadoop/logs
