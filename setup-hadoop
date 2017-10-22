@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # https://rstudio-pubs-static.s3.amazonaws.com/78508_abe89197267240dfb6f4facb361a20ed.html
+# https://www.alexjf.net/blog/distributed-systems/hadoop-yarn-installation-definitive-guide/
 
 # Function for asking to proceed
 confirm () {
@@ -54,6 +55,7 @@ function update_apt_repo  {
   sudo apt-get update 
   sudo apt-get install mdadm bonnie++ iozone3
   sudo apt-get install openssh-server
+  sudo apt-get install mc
 } 
 
 function install_java {
@@ -83,6 +85,7 @@ echo "Now script is updating Bashrc for export Path etc"
 cat >> ~/.bashrc << EOL
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle/
 export HADOOP_HOME=/usr/local/hadoop
+export HADOOP_PREFIX=/usr/local/hadoop
 export HADOOP_INSTALL=/usr/local/hadoop
 export PATH=$PATH:/usr/local/hadoop/bin:/usr/local/hadoop/sbin
 export HADOOP_MAPRED_HOME=/usr/local/hadoop
@@ -90,6 +93,23 @@ export HADOOP_COMMON_HOME=/usr/local/hadoop
 export HADOOP_HDFS_HOME=/usr/local/hadoop
 export YARN_HOME=/usr/local/hadoop
 export HADOOP_COMMON_LIB_NATIVE_DIR=/usr/local/hadoop/lib/native  
+export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+export HADOOP_YARN_HOME=/usr/local/hadoop
+EOL
+
+cat >> /home/hduser/.bashrc << EOL
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle/
+export HADOOP_HOME=/usr/local/hadoop
+export HADOOP_PREFIX=/usr/local/hadoop
+export HADOOP_INSTALL=/usr/local/hadoop
+export PATH=$PATH:/usr/local/hadoop/bin:/usr/local/hadoop/sbin
+export HADOOP_MAPRED_HOME=/usr/local/hadoop
+export HADOOP_COMMON_HOME=/usr/local/hadoop
+export HADOOP_HDFS_HOME=/usr/local/hadoop
+export YARN_HOME=/usr/local/hadoop
+export HADOOP_COMMON_LIB_NATIVE_DIR=/usr/local/hadoop/lib/native  
+export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+export HADOOP_YARN_HOME=/usr/local/hadoop
 EOL
 
 #cat ~/.bashrc
@@ -121,6 +141,12 @@ cat >> /usr/local/hadoop/etc/hadoop/yarn-site.xml << EOL
 <configuration>
 <property><name>yarn.nodemanager.aux-services</name><value>mapreduce_shuffle</value></property>
 <property><name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name><value>org.apache.hadoop.mapred.ShuffleHandler</value></property>
+<property><name>yarn.scheduler.minimum-allocation-mb</name><value>1024</value></property>
+<property><name>yarn.scheduler.maximum-allocation-mb</name><value>8192</value></property>
+<property><name>yarn.scheduler.minimum-allocation-vcores</name><value>1</value></property>
+<property><name>yarn.scheduler.maximum-allocation-vcores</name><value>3</value></property>
+<property><name>yarn.nodemanager.resource.memory-mb</name><value>61440</value></property>
+<property><name>yarn.nodemanager.resource.cpu-vcores</name><value>7</value></property>
 </configuration>
 EOL
 
@@ -144,10 +170,11 @@ sudo mkdir -p /data/hadoop_store/hdfs/datanode
 cat >> /usr/local/hadoop/etc/hadoop/hdfs-site.xml << EOL
 <configuration>
 <property><name>dfs.replication</name><value>1</value></property>
-<property><name>dfs.namenode.name.dir</name><value>file:/data/hadoop_store/hdfs/namenode</value></property>
-<property><name>dfs.datanode.data.dir</name><value>file:/data/hadoop_store/hdfs/datanode</value></property>
+<property><name>dfs.namenode.name.dir</name><value>file:///data/hadoop_store/hdfs/namenode</value></property>
+<property><name>dfs.datanode.data.dir</name><value>file:///data/hadoop_store/hdfs/datanode</value></property>
 </configuration>
 EOL
+
 
 #sudo rm -rf /data/hadoop_store
 sudo chown hduser:hadoop -R /data/hadoop_store
@@ -172,6 +199,7 @@ echo "su hduser"
 echo "cd /usr/local/hadoop/sbin"
 echo "./start-dfs.sh"  
 echo "./start-yarn.sh"  
+echo "jps"  
 
 echo "To stop hadoop use following scripts."  
 echo "su hduser"  
