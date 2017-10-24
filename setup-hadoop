@@ -112,6 +112,24 @@ function install_hadoop {
 
 function setup_environment {
 
+
+
+
+
+
+
+
+sudo blockdev --setra 16384 /dev/md127
+
+
+
+
+
+
+
+
+
+
 echo "Now script is updating Bashrc for export Path etc"  
 
 cat >> ~/.bashrc << EOL
