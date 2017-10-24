@@ -21,7 +21,39 @@ function setup_data_drive_01 {
   echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdc
   sudo mkfs -t ext4 /dev/sdc1
   sudo mkdir /data
-  sudo mount /dev/sdc1 /data
+  sudo mount /dev/sdc1 /data -o noatime
+}
+
+function setup_data_drive_04 {
+
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdc
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdd
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sde
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdf
+
+  sudo mdadm --create /dev/md127 --level 0 --raid-devices 4 /dev/sdc1 /dev/sdd1 /dev/sde1 /dev/sdf1
+  sudo mkfs -t ext4 /dev/md127
+
+  sudo mkdir /data
+  sudo mount /dev/md127 /data -o noatime
+}
+
+function setup_data_drive_08 {
+
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdc
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdd
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sde
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdf
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdg
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdh
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdi
+  echo -e "n\np\n1\n\n\nw" | sudo fdisk /dev/sdj
+
+  sudo mdadm --create /dev/md127 --level 0 --raid-devices 8 /dev/sdc1 /dev/sdd1 /dev/sde1 /dev/sdf1 /dev/sdg1 /dev/sdh1 /dev/sdi1 /dev/sdj1
+  sudo mkfs -t ext4 /dev/md127
+
+  sudo mkdir /data
+  sudo mount /dev/md127 /data -o noatime
 }
 
 function setup_data_drive_16 {
@@ -47,7 +79,7 @@ function setup_data_drive_16 {
   sudo mkfs -t ext4 /dev/md127
 
   sudo mkdir /data
-  sudo mount /dev/md127 /data
+  sudo mount /dev/md127 /data -o noatime
 }
 
 function update_apt_repo  {
@@ -217,6 +249,8 @@ echo "jps"
 clear
 
 confirm "Setup Data Drive 01? [y/N] " && setup_data_drive_01
+confirm "Setup Data Drive 04? [y/N] " && setup_data_drive_04
+confirm "Setup Data Drive 08? [y/N] " && setup_data_drive_08
 confirm "Setup Data Drive 16? [y/N] " && setup_data_drive_16
 confirm "Update Repository? [y/N] " && update_apt_repo 
 confirm "Install Java? [y/N] " && install_java
