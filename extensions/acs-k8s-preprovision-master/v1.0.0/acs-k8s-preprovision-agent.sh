@@ -50,16 +50,17 @@ preprovision() {
   log ''
 
   local proxy=$(get_param 'Proxy')
+  echo $proxy
 
-  echo "export http_proxy=http://"$proxy >> /etc/environment
-  echo "export https_proxy=http://"$proxy >> /etc/environment
-  echo "export ftp_proxy=http://"$proxy >> /etc/environment
+  #echo "export http_proxy=http://"$proxy >> /etc/environment
+  #echo "export https_proxy=http://"$proxy >> /etc/environment
+  #echo "export ftp_proxy=http://"$proxy >> /etc/environment
   
-  echo "Acquire::http::proxy \"http://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
-  echo "Acquire::https::proxy \"http://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
-  echo "Acquire::ftp::proxy \"ftp://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
+  #echo "Acquire::http::proxy \"http://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
+  #echo "Acquire::https::proxy \"http://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
+  #echo "Acquire::ftp::proxy \"ftp://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
 
-  echo "APT::Get::AllowUnauthenticated \"true\"" >> /etc/apt/apt.conf.d/99myown
+  #echo "APT::Get::AllowUnauthenticated \"true\"" >> /etc/apt/apt.conf.d/99myown
     
   log 'done'
   log ''
