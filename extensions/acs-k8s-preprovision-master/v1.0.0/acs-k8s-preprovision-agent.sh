@@ -46,7 +46,7 @@ cleanup_script_dependencies() {
 
 preprovision() {
   log ''
-  log 'preprovision master'
+  log 'preprovision agent'
   log ''
 
   #local wsid=$(get_param 'WSID')
@@ -57,7 +57,7 @@ preprovision() {
 }
 
 log ''
-log 'acs-k8s-preprovision-master'
+log 'acs-k8s-preprovision-agent'
 log '--------------------------------------------------'
 
 install_script_dependencies
