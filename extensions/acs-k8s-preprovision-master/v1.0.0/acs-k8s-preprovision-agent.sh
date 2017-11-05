@@ -50,7 +50,9 @@ preprovision() {
   log ''
 
   local proxy=$(get_param 'Proxy')
-  echo $proxy
+  local NTP=$(get_param 'NTP')
+
+  echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
 
   #echo "export http_proxy=http://"$proxy >> /etc/environment
   #echo "export https_proxy=http://"$proxy >> /etc/environment
