@@ -49,8 +49,16 @@ preprovision() {
   log 'preprovision master'
   log ''
 
+  # https://github.com/kubernetes/kops/issues/2481
+
   local proxy=$(get_param 'Proxy')
   local NTP=$(get_param 'NTP')
+
+  echo DefaultEnvironment=http_proxy=http://${proxy} https_proxy=http://${proxy} ftp_proxy=http://${proxy} >> /etc/systemd/system.conf
+
+  echo "export http_proxy=\"http://"$proxy"\"" >> /etc/default/docker
+  echo "export https_proxy=\"http://"$proxy"\"" >> /etc/default/docker
+  echo "export ftp_proxy=\"http://"$proxy"\"" >> /etc/default/docker
 
   echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
 
