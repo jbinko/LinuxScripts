@@ -20,12 +20,6 @@ install_script_dependencies() {
   log 'Installing script dependencies'
   log ''
 
-  # Install jq to obtain the input parameters
-  log 'Installing jq'
-  log ''
-  sudo apt-get -y install jq
-  log ''
-
   log 'done'
   log ''
 }
@@ -34,11 +28,6 @@ cleanup_script_dependencies() {
   log ''
   log 'Removing script dependencies'
   log ''
-
-  #log 'Removing jq'
-  #log ''
-  #sudo apt-get -y remove jq
-  #log ''
 
   log 'done'
   log ''
