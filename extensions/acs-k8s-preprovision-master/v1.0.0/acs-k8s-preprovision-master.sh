@@ -35,10 +35,10 @@ cleanup_script_dependencies() {
   log 'Removing script dependencies'
   log ''
 
-  log 'Removing jq'
-  log ''
-  sudo apt-get -y remove jq
-  log ''
+  #log 'Removing jq'
+  #log ''
+  #sudo apt-get -y remove jq
+  #log ''
 
   log 'done'
   log ''
