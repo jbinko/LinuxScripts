@@ -53,25 +53,31 @@ preprovision() {
 
   local proxy=$(get_param 'Proxy')
   local NTP=$(get_param 'NTP')
+  
+  echo "export http_proxy=http://"$proxy >> /etc/environment
+  echo "export https_proxy=http://"$proxy >> /etc/environment
+  echo "export ftp_proxy=http://"$proxy >> /etc/environment
+  . /etc/environment
 
-  echo DefaultEnvironment=http_proxy=http://${proxy} https_proxy=http://${proxy} ftp_proxy=http://${proxy} >> /etc/systemd/system.conf
-
-  echo "export http_proxy=\"http://"$proxy"\"" >> /etc/default/docker
-  echo "export https_proxy=\"http://"$proxy"\"" >> /etc/default/docker
-  echo "export ftp_proxy=\"http://"$proxy"\"" >> /etc/default/docker
+  echo "export http_proxy=http://"$proxy >> ~/.bashrc
+  echo "export https_proxy=http://"$proxy >> ~/.bashrc
+  echo "export ftp_proxy=http://"$proxy >> ~/.bashrc
+  source ~/.bashrc
 
   echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
 
-  #echo "export http_proxy=http://"$proxy >> /etc/environment
-  #echo "export https_proxy=http://"$proxy >> /etc/environment
-  #echo "export ftp_proxy=http://"$proxy >> /etc/environment
-  
-  #echo "Acquire::http::proxy \"http://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
-  #echo "Acquire::https::proxy \"http://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
-  #echo "Acquire::ftp::proxy \"ftp://"$proxy"\"" >> /etc/apt/apt.conf.d/95proxies
+  echo "Acquire::http::proxy \"http://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
+  echo "Acquire::https::proxy \"http://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
+  echo "Acquire::ftp::proxy \"ftp://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
 
-  #echo "APT::Get::AllowUnauthenticated \"true\"" >> /etc/apt/apt.conf.d/99myown
+  echo "APT::Get::AllowUnauthenticated \"true\";" >> /etc/apt/apt.conf.d/99myown
   
+  echo "DefaultEnvironment=\"http_proxy=http://"${proxy}"\" \"https_proxy=http://"${proxy}"\" \"ftp_proxy=http://"${proxy}"\"" >> /etc/systemd/system.conf
+
+  #echo "export http_proxy=\"http://"$proxy"\"" >> /etc/default/docker
+  #echo "export https_proxy=\"http://"$proxy"\"" >> /etc/default/docker
+  #echo "export ftp_proxy=\"http://"$proxy"\"" >> /etc/default/docker
+    
   log 'done'
   log ''
 }
