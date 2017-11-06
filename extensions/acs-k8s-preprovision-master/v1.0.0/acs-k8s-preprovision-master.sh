@@ -69,6 +69,11 @@ preprovision() {
   
   echo "DefaultEnvironment=\"http_proxy=http://"${proxy}"\" \"https_proxy=http://"${proxy}"\" \"ftp_proxy=http://"${proxy}"\"" >> /etc/systemd/system.conf
 
+  # Copy certs
+  sudo cp /etc/kubernetes/certs/*.crt /usr/local/share/ca-certificates
+  sudo update-ca-certificates --fresh
+  sudo dpkg-reconfigure -f noninteractive ca-certificates
+
   #echo "export http_proxy=\"http://"$proxy"\"" >> /etc/default/docker
   #echo "export https_proxy=\"http://"$proxy"\"" >> /etc/default/docker
   #echo "export ftp_proxy=\"http://"$proxy"\"" >> /etc/default/docker
