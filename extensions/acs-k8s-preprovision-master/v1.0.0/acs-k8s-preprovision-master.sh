@@ -74,6 +74,9 @@ preprovision() {
   sudo update-ca-certificates --fresh
   sudo dpkg-reconfigure -f noninteractive ca-certificates
 
+  #MC
+  sudo apt-get -y install mc
+
   #echo "export http_proxy=\"http://"$proxy"\"" >> /etc/default/docker
   #echo "export https_proxy=\"http://"$proxy"\"" >> /etc/default/docker
   #echo "export ftp_proxy=\"http://"$proxy"\"" >> /etc/default/docker
