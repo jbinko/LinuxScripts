@@ -71,7 +71,7 @@ preprovision() {
 
   # Copy certs
   sudo cp /etc/kubernetes/certs/*.crt /usr/local/share/ca-certificates
-  sudo update-ca-certificates --fresh
+  sudo update-ca-certificates
   sudo dpkg-reconfigure -f noninteractive ca-certificates
 
   #MC
