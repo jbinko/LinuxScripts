@@ -49,15 +49,16 @@ preprovision() {
   local proxy=$(get_param 'Proxy')
   local NTP=$(get_param 'NTP')
   
-  echo "export http_proxy=http://"$proxy >> /etc/environment
-  echo "export https_proxy=http://"$proxy >> /etc/environment
-  echo "export ftp_proxy=http://"$proxy >> /etc/environment
-  . /etc/environment
+  echo "http_proxy=http://"$proxy >> /etc/environment
+  echo "https_proxy=http://"$proxy >> /etc/environment
+  echo "ftp_proxy=http://"$proxy >> /etc/environment
 
-  echo "export http_proxy=http://"$proxy >> ~/.bashrc
-  echo "export https_proxy=http://"$proxy >> ~/.bashrc
-  echo "export ftp_proxy=http://"$proxy >> ~/.bashrc
-  source ~/.bashrc
+  touch /etc/profile.d/acsenv.sh
+  chmod +rwxrwxrwx /etc/profile.d/acsenv.sh
+  echo "export http_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
+  echo "export https_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
+  echo "export ftp_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
+  source /etc/profile.d/acsenv.sh
 
   echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
 
