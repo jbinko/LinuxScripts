@@ -49,26 +49,26 @@ preprovision() {
   local proxy=$(get_param 'Proxy')
   local NTP=$(get_param 'NTP')
   
-  echo "http_proxy=http://"$proxy >> /etc/environment
-  echo "https_proxy=http://"$proxy >> /etc/environment
-  echo "ftp_proxy=http://"$proxy >> /etc/environment
+  ##echo "http_proxy=http://"$proxy >> /etc/environment
+  ##echo "https_proxy=http://"$proxy >> /etc/environment
+  ##echo "ftp_proxy=http://"$proxy >> /etc/environment
 
-  touch /etc/profile.d/acsenv.sh
-  chmod +rwxrwxrwx /etc/profile.d/acsenv.sh
-  echo "export http_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
-  echo "export https_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
-  echo "export ftp_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
-  source /etc/profile.d/acsenv.sh
+  ##touch /etc/profile.d/acsenv.sh
+  ##chmod +rwxrwxrwx /etc/profile.d/acsenv.sh
+  ##echo "export http_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
+  ##echo "export https_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
+  ##echo "export ftp_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
+  ##source /etc/profile.d/acsenv.sh
 
   echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
 
-  echo "Acquire::http::proxy \"http://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
-  echo "Acquire::https::proxy \"http://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
-  echo "Acquire::ftp::proxy \"ftp://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
+  ##echo "Acquire::http::proxy \"http://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
+  ##echo "Acquire::https::proxy \"http://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
+  ##echo "Acquire::ftp::proxy \"ftp://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
 
-  echo "APT::Get::AllowUnauthenticated \"true\";" >> /etc/apt/apt.conf.d/99myown
+  ##echo "APT::Get::AllowUnauthenticated \"true\";" >> /etc/apt/apt.conf.d/99myown
   
-  echo "DefaultEnvironment=\"http_proxy=http://"${proxy}"\" \"https_proxy=http://"${proxy}"\" \"ftp_proxy=http://"${proxy}"\"" >> /etc/systemd/system.conf
+  ##echo "DefaultEnvironment=\"http_proxy=http://"${proxy}"\" \"https_proxy=http://"${proxy}"\" \"ftp_proxy=http://"${proxy}"\"" >> /etc/systemd/system.conf
 
   #MC
   sudo apt-get -y install mc
