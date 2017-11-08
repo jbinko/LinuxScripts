@@ -46,8 +46,19 @@ preprovision() {
 
   # https://github.com/kubernetes/kops/issues/2481
 
-  local proxy=$(get_param 'Proxy')
+  local proxyHost=$(get_param 'ProxyHost')
+  local proxyPort=$(get_param 'ProxyPort')
   local NTP=$(get_param 'NTP')
+
+  sudo echo "HttpProxy.Host=http://"$proxyHost >> /etc/waagent.conf
+  sudo echo "HttpProxy.Port="$proxyPort >> /etc/waagent.conf
+  sudo service walinuxagent restart
+  
+  sudo echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
+  sudo service systemd-timesyncd restart
+
+
+
   
   ##echo "http_proxy=http://"$proxy >> /etc/environment
   ##echo "https_proxy=http://"$proxy >> /etc/environment
@@ -59,8 +70,6 @@ preprovision() {
   ##echo "export https_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
   ##echo "export ftp_proxy=http://"$proxy >> /etc/profile.d/acsenv.sh
   ##source /etc/profile.d/acsenv.sh
-
-  echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
 
   ##echo "Acquire::http::proxy \"http://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
   ##echo "Acquire::https::proxy \"http://"$proxy"\";" >> /etc/apt/apt.conf.d/95proxies
