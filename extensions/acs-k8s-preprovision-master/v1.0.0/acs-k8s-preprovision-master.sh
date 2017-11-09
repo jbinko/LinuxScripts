@@ -26,7 +26,7 @@ preprovision() {
   sudo sh -c "echo HttpProxy.Host=http://$PROXY_HOST >> /etc/waagent.conf"
   sudo sh -c "echo HttpProxy.Port=$PROXY_PORT >> /etc/waagent.conf"
   sudo systemctl daemon-reload
-  #sudo service walinuxagent restart 
+  sudo service walinuxagent restart 
   
   # Company Proxy for APT
   sudo sh -c "echo 'Acquire::http::proxy \"http://$PROXY_HOST:$PROXY_PORT/\";' >> /etc/apt/apt.conf.d/95proxies"
