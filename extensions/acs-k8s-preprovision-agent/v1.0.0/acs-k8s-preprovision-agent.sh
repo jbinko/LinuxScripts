@@ -50,12 +50,20 @@ preprovision() {
   local proxyPort=$(get_param 'ProxyPort')
   local NTP=$(get_param 'NTP')
 
-  sudo sed "/\[Service\]/a Environment=http_proxy=http://$proxyHost:$proxyPort\
-Environment=https_proxy=http://$proxyHost:$proxyPort\" /lib/systemd/system/walinuxagent.service;
-  sudo service walinuxagent restart
+  local proxyHost=$(get_param 'ProxyHost')
+  local proxyPort=$(get_param 'ProxyPort')
+  local NTP=$(get_param 'NTP')
 
+  sudo sed "/\[Service\]/a Environment=http_proxy=http://$proxyHost:$proxyPort" /lib/systemd/system/walinuxagent.service
+  sudo sed "/\[Service\]/a Environment=https_proxy=http://$proxyHost:$proxyPort" /lib/systemd/system/walinuxagent.service
+  sudo service walinuxagent restart
+  
   sudo echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
   sudo service systemd-timesyncd restart
+
+
+
+
 
 
 
