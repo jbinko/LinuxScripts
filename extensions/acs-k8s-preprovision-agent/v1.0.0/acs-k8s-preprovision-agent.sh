@@ -51,14 +51,16 @@ preprovision() {
   local NTP=$(get_param 'NTP')
 
   # Company Proxy for walinuxagent
-  sudo sed "/\[Service\]/a Environment=http_proxy=http://$proxyHost:$proxyPort" /lib/systemd/system/walinuxagent.service
-  sudo sed "/\[Service\]/a Environment=https_proxy=http://$proxyHost:$proxyPort" /lib/systemd/system/walinuxagent.service
+  sudo sed "/\[Service\]/a Environment=http_proxy=http://$proxyHost:$proxyPort" /lib/systemd/system/walinuxagent.service > walinuxagent.service
+  sudo mv walinuxagent.service /lib/systemd/system/walinuxagent.service
+  sudo sed "/\[Service\]/a Environment=https_proxy=http://$proxyHost:$proxyPort" /lib/systemd/system/walinuxagent.service > walinuxagent.service
+  sudo mv walinuxagent.service /lib/systemd/system/walinuxagent.service
   sudo service walinuxagent restart
   
   # Company Proxy for APT
-  sudo echo "Acquire::http::proxy \"http://$ProxyHost:$ProxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
-  sudo echo "Acquire::https::proxy \"http://$ProxyHost:$ProxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
-  sudo echo "Acquire::ftp::proxy \"http://$ProxyHost:$ProxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
+  sudo echo "Acquire::http::proxy \"http://$proxyHost:$proxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
+  sudo echo "Acquire::https::proxy \"http://$proxyHost:$proxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
+  sudo echo "Acquire::ftp::proxy \"http://$proxyHost:$proxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
   
   # Company NTP
   sudo echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
