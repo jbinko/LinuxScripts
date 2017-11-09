@@ -50,16 +50,22 @@ preprovision() {
   local proxyPort=$(get_param 'ProxyPort')
   local NTP=$(get_param 'NTP')
 
-  local proxyHost=$(get_param 'ProxyHost')
-  local proxyPort=$(get_param 'ProxyPort')
-  local NTP=$(get_param 'NTP')
-
+  # Company Proxy for walinuxagent
   sudo sed "/\[Service\]/a Environment=http_proxy=http://$proxyHost:$proxyPort" /lib/systemd/system/walinuxagent.service
   sudo sed "/\[Service\]/a Environment=https_proxy=http://$proxyHost:$proxyPort" /lib/systemd/system/walinuxagent.service
   sudo service walinuxagent restart
   
+  # Company Proxy for APT
+  sudo echo "Acquire::http::proxy \"http://$ProxyHost:$ProxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
+  sudo echo "Acquire::https::proxy \"http://$ProxyHost:$ProxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
+  sudo echo "Acquire::ftp::proxy \"http://$ProxyHost:$ProxyPort/\";" >> /etc/apt/apt.conf.d/95proxies
+  
+  # Company NTP
   sudo echo "NTP="$NTP >> /etc/systemd/timesyncd.conf
   sudo service systemd-timesyncd restart
+
+  # APT - AllowUnauthenticated
+  sudo echo "APT::Get::AllowUnauthenticated \"true\";" >> /etc/apt/apt.conf.d/99myown
 
 
 
