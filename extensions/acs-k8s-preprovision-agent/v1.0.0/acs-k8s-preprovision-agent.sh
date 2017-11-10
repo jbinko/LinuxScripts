@@ -25,7 +25,6 @@ preprovision() {
   sudo mv waagent.conf /etc/waagent.conf
   sudo sh -c "sed 's/#HttpProxy.Port=None/HttpProxy.Port=$PROXY_PORT/g' /etc/waagent.conf > waagent.conf"
   sudo mv waagent.conf /etc/waagent.conf
-  sudo systemctl daemon-reload
   
   # Company NTP
   sudo sh -c "echo NTP=$NTP >> /etc/systemd/timesyncd.conf"
@@ -36,7 +35,10 @@ preprovision() {
 
   log 'Restarting walinuxagent ....'
   log ''
-  sudo service walinuxagent restart 
+  sudo service walinuxagent restart
+  log 'daemon-reload ....'
+  log ''
+  sudo systemctl daemon-reload
 }
 
 log ''
