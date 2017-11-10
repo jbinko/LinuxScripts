@@ -23,8 +23,12 @@ preprovision() {
   sudo mv walinuxagent.service /lib/systemd/system/walinuxagent.service
   sudo sh -c "sed '/\[Service\]/a Environment=https_proxy=http://$PROXY_HOST:$PROXY_PORT' /lib/systemd/system/walinuxagent.service > walinuxagent.service"
   sudo mv walinuxagent.service /lib/systemd/system/walinuxagent.service
-  sudo sh -c "echo HttpProxy.Host=http://$PROXY_HOST >> /etc/waagent.conf"
-  sudo sh -c "echo HttpProxy.Port=$PROXY_PORT >> /etc/waagent.conf"
+  sudo sh -c "sed 's/Logs.Verbose=n/Logs.Verbose=y/g' /etc/waagent.conf > waagent.conf"
+  sudo mv waagent.conf /etc/waagent.conf
+  sudo sh -c "sed 's/#HttpProxy.Host=None/HttpProxy.Host=$PROXY_HOST/g' /etc/waagent.conf > waagent.conf"
+  sudo mv waagent.conf /etc/waagent.conf
+  sudo sh -c "sed 's/#HttpProxy.Port=None/HttpProxy.Port=$PROXY_PORT/g' /etc/waagent.conf > waagent.conf"
+  sudo mv waagent.conf /etc/waagent.conf
   sudo systemctl daemon-reload
   sudo service walinuxagent restart 
   
