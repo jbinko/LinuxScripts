@@ -19,18 +19,23 @@ preprovision() {
   # https://github.com/kubernetes/kops/issues/2481
 
   # Company Proxy for walinuxagent
-  #sudo sh -c "sed 's/Logs.Verbose=n/Logs.Verbose=y/g' /etc/waagent.conf > /tmp/waagent.conf"
-  #sudo mv /tmp/waagent.conf /etc/waagent.conf
-  sudo sh -c "sed 's/#HttpProxy.Host=None/HttpProxy.Host=http://$PROXY_HOST/g' /etc/waagent.conf > /tmp/waagent.conf"
-  sudo mv /tmp/waagent.conf /etc/waagent.conf
-  sudo sh -c "sed 's/#HttpProxy.Port=None/HttpProxy.Port=$PROXY_PORT/g' /etc/waagent.conf > /tmp/waagent.conf"
-  sudo mv /tmp/waagent.conf /etc/waagent.conf
+  log 'waagent.conf'
+  log ''
+  #sudo sh -c 'sed -i s,Logs.Verbose=n,Logs.Verbose=y,g /etc/waagent.conf'
+  sudo sh -c 'sed -i /HttpProxy.Host/s/^#//g /etc/waagent.conf'
+  sudo sh -c 'sed -i /HttpProxy.Port/s/^#//g /etc/waagent.conf'
+  sudo sh -c 'sed -i s,HttpProxy.Host=None,HttpProxy.Host=http://$PROXY_HOST,g /etc/waagent.conf'
+  sudo sh -c 'sed -i s,HttpProxy.Port=None,HttpProxy.Port=$PROXY_PORT,g /etc/waagent.conf'
   
   # Company NTP
+  log 'NTP'
+  log ''
   sudo sh -c "echo NTP=$NTP >> /etc/systemd/timesyncd.conf"
   sudo service systemd-timesyncd restart
 
   # Copy cluster certificates
+  log 'certificates'
+  log ''
   sudo cp /etc/kubernetes/certs/*.crt /usr/local/share/ca-certificates
   sudo update-ca-certificates
   sudo dpkg-reconfigure -f noninteractive ca-certificates
@@ -40,7 +45,7 @@ preprovision() {
   
   log 'Restarting walinuxagent ....'
   log ''
-  sudo service walinuxagent restart
+  sudo systemctl restart walinuxagent.service
   log 'daemon-reload ....'
   log ''
   sudo systemctl daemon-reload
