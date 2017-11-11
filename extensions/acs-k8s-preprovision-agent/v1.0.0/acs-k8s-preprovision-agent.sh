@@ -24,14 +24,10 @@ preprovision() {
   #sed -i s,Logs.Verbose=n,Logs.Verbose=y,g /etc/waagent.conf
   sed -i s,#HttpProxy.Host=None,HttpProxy.Host=http://$PROXY_HOST,g /etc/waagent.conf
   sed -i s,#HttpProxy.Port=None,HttpProxy.Port=$PROXY_PORT,g /etc/waagent.conf
-  sed -i s,Service],Service]\\nEnvironment=\"https_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=\"http_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=\"HTTPS_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=\"HTTP_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=\"no_proxy=blob.core.windows.net\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=\"NO_PROXY=blob.core.windows.net\",g /lib/systemd/system/walinuxagent.service
 
   # Company Proxy for Docker - https://docs.docker.com/engine/admin/systemd/#httphttps-proxy
+  log 'Docker http-proxy.conf'
+  log ''
   mkdir -p /etc/systemd/system/docker.service.d
   echo '[Service]' >> /etc/systemd/system/docker.service.d/http-proxy.conf
   echo Environment="HTTP_PROXY=http://$PROXY_HOST:$PROXY_PORT/" >> /etc/systemd/system/docker.service.d/http-proxy.conf
@@ -42,6 +38,8 @@ preprovision() {
   echo Environment="no_proxy=localhost,127.0.0.1" >> /etc/systemd/system/docker.service.d/http-proxy.conf
 
   # Company Proxy for Snapd
+  log 'snapd service'
+  log ''
   sed -i s,Service],Service]\\nEnvironment=\"https_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/snapd.refresh.service
   sed -i s,Service],Service]\\nEnvironment=\"http_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/snapd.refresh.service
   sed -i s,Service],Service]\\nEnvironment=\"HTTPS_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/snapd.refresh.service
@@ -71,7 +69,8 @@ preprovision() {
   sed -i s,Service],Service]\\nEnvironment=\"http_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/system-shutdown.service
   sed -i s,Service],Service]\\nEnvironment=\"HTTPS_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/system-shutdown.service
   sed -i s,Service],Service]\\nEnvironment=\"HTTP_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/system-shutdown.service
-  
+  sudo snap refresh
+
   # Company NTP
   log 'NTP'
   log ''
@@ -88,6 +87,16 @@ preprovision() {
   log ''
   sudo systemctl daemon-reload
   
+  # Company Proxy for walinuxagent service - at the end because it restarts
+  log 'waagent.conf'
+  log ''
+  sed -i s,Service],Service]\\nEnvironment=\"https_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"http_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"HTTPS_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"HTTP_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"no_proxy=blob.core.windows.net\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"NO_PROXY=blob.core.windows.net\",g /lib/systemd/system/walinuxagent.service
+
   # https://docs.docker.com/engine/admin/systemd/
   sudo systemctl show --property=Environment walinuxagent.service
 }
