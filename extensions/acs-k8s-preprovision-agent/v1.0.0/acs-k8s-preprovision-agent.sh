@@ -21,7 +21,7 @@ preprovision() {
   # Company Proxy for walinuxagent
   log 'waagent.conf'
   log ''
-  sed -i s,Logs.Verbose=n,Logs.Verbose=y,g /etc/waagent.conf
+  #sed -i s,Logs.Verbose=n,Logs.Verbose=y,g /etc/waagent.conf
   #sed -i s,#HttpProxy.Host=None,HttpProxy.Host=http://$PROXY_HOST,g /etc/waagent.conf
   #sed -i s,#HttpProxy.Port=None,HttpProxy.Port=$PROXY_PORT,g /etc/waagent.conf
   sed -i s,Service],Service]\\nEnvironment=\"https_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
@@ -88,7 +88,7 @@ preprovision() {
   log 'Async restart of services'
   log ''
   # https://docs.docker.com/engine/admin/systemd/
-  sudo /bin/bash -c '( sleep 5; systemctl daemon-reload; systemctl restart walinuxagent.service; snap refresh; ) &'
+  sudo /bin/bash -c '( sleep 5; systemctl daemon-reload; systemctl restart walinuxagent; systemctl restart snapd; snap refresh; ) &'
 }
 
 log ''
