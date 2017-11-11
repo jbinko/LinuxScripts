@@ -18,21 +18,16 @@ preprovision() {
 
   # https://github.com/kubernetes/kops/issues/2481
 
-   # Company Proxy for walinuxagent
+  # Company Proxy for walinuxagent
   log 'waagent.conf'
   log ''
   #sed -i s,Logs.Verbose=n,Logs.Verbose=y,g /etc/waagent.conf
   sed -i s,#HttpProxy.Host=None,HttpProxy.Host=http://$PROXY_HOST,g /etc/waagent.conf
   sed -i s,#HttpProxy.Port=None,HttpProxy.Port=$PROXY_PORT,g /etc/waagent.conf
-  #sed -i s,Service],Service]\\nEnvironment=\"http_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT\"" "\"https_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=http_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT" "https_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT,g /lib/systemd/system/walinuxagent.service
-
-
-
-  echo http_proxy=http://$PROXY_HOST:$PROXY_PORT >> /etc/environment
-  echo https_proxy=http://$PROXY_HOST:$PROXY_PORT >> /etc/environment
-  echo ftp_proxy=http://$PROXY_HOST:$PROXY_PORT >> /etc/environment
-  echo no_proxy=127.0.0.1 >> /etc/environment
+  sed -i s,Service],Service]\\nEnvironment=\"https_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"http_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"HTTPS_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"HTTP_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
   
   # Company NTP
   log 'NTP'
