@@ -21,16 +21,16 @@ preprovision() {
   # Company Proxy for walinuxagent
   log 'waagent.conf'
   log ''
-  #sudo sh -c 'sed -i s,Logs.Verbose=n,Logs.Verbose=y,g /etc/waagent.conf'
-  sudo sh -c 'sed -i /HttpProxy.Host/s/^#//g /etc/waagent.conf'
-  sudo sh -c 'sed -i /HttpProxy.Port/s/^#//g /etc/waagent.conf'
-  sudo sh -c 'sed -i s,HttpProxy.Host=None,HttpProxy.Host=http://$PROXY_HOST,g /etc/waagent.conf'
-  sudo sh -c 'sed -i s,HttpProxy.Port=None,HttpProxy.Port=$PROXY_PORT,g /etc/waagent.conf'
+  #sed -i s,Logs.Verbose=n,Logs.Verbose=y,g /etc/waagent.conf
+  sed -i /HttpProxy.Host/s/^#//g /etc/waagent.conf
+  sed -i /HttpProxy.Port/s/^#//g /etc/waagent.conf
+  sed -i s,HttpProxy.Host=None,HttpProxy.Host=http://$PROXY_HOST,g /etc/waagent.conf
+  sed -i s,HttpProxy.Port=None,HttpProxy.Port=$PROXY_PORT,g /etc/waagent.conf
   
   # Company NTP
   log 'NTP'
   log ''
-  sudo sh -c "echo NTP=$NTP >> /etc/systemd/timesyncd.conf"
+  echo NTP=$NTP >> /etc/systemd/timesyncd.conf
   sudo service systemd-timesyncd restart
 
   log 'done'
