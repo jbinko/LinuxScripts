@@ -22,10 +22,9 @@ preprovision() {
   log 'waagent.conf'
   log ''
   #sed -i s,Logs.Verbose=n,Logs.Verbose=y,g /etc/waagent.conf
-  sed -i /HttpProxy.Host/s/^#//g /etc/waagent.conf
-  sed -i /HttpProxy.Port/s/^#//g /etc/waagent.conf
-  sed -i s,HttpProxy.Host=None,HttpProxy.Host=http://$PROXY_HOST,g /etc/waagent.conf
-  sed -i s,HttpProxy.Port=None,HttpProxy.Port=$PROXY_PORT,g /etc/waagent.conf
+  sed -i s,#HttpProxy.Host=None,HttpProxy.Host=http://$PROXY_HOST,g /etc/waagent.conf
+  sed -i s,#HttpProxy.Port=None,HttpProxy.Port=$PROXY_PORT,g /etc/waagent.conf
+  sed -i s,[Service],[Service]\nEnvironment="http_proxy=http://$PROXY_HOST:$PROXY_PORT" "https_proxy=http://$PROXY_HOST:$PROXY_PORT",g /lib/systemd/system/waagent.service
   
   # Company NTP
   log 'NTP'
