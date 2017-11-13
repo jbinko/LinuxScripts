@@ -3,9 +3,8 @@
 set -e
 [ "$DEBUG" == 'true' ] && set -x
 
-PROXY_HOST="${1}"
-PROXY_PORT="${2}"
-NTP="${3}"
+PROXY="${1}"
+NTP="${2}"
 
 log() {
   echo "`date +'[%Y-%m-%d %H:%M:%S:%N %Z]'` $1"
@@ -19,10 +18,10 @@ bootstrap() {
   # Company Proxy for walinuxagent
   log 'waagent.conf'
   log ''
-  sed -i s,Service],Service]\\nEnvironment=\"https_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=\"http_proxy=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=\"HTTPS_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
-  sed -i s,Service],Service]\\nEnvironment=\"HTTP_PROXY=http:\/\/$PROXY_HOST:$PROXY_PORT/\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"https_proxy=$PROXY\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"http_proxy=$PROXY\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"HTTPS_PROXY=$PROXY\",g /lib/systemd/system/walinuxagent.service
+  sed -i s,Service],Service]\\nEnvironment=\"HTTP_PROXY=$PROXY\",g /lib/systemd/system/walinuxagent.service
 
   # Company NTP
   log 'NTP'
