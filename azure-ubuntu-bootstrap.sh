@@ -24,9 +24,9 @@ bootstrap() {
   sed -i s,Service],Service]\\nEnvironment=\"HTTP_PROXY=$PROXY\",g /lib/systemd/system/walinuxagent.service
 
   # Company Proxy for APT
-  echo Acquire::http::proxy \"$PROXY\"; >> /etc/apt/apt.conf.d/95proxies
-  echo Acquire::https::proxy \"$PROXY\"; >> /etc/apt/apt.conf.d/95proxies
-  echo Acquire::ftp::proxy \"$PROXY\"; >> /etc/apt/apt.conf.d/95proxies
+  echo 'Acquire::http::proxy \"$PROXY\";' >> /etc/apt/apt.conf.d/95proxies
+  echo 'Acquire::https::proxy \"$PROXY\";' >> /etc/apt/apt.conf.d/95proxies
+  echo 'Acquire::ftp::proxy \"$PROXY\";' >> /etc/apt/apt.conf.d/95proxies
 
   # Company NTP
   log 'NTP'
