@@ -16,10 +16,13 @@ adjust_manifests() {
 
   # Inject proxy to system manifests
   sed -i "s,command:,env:\\n        - name: https_proxy\\n          value: $PROXY\\n        - name: http_proxy\\n          value: $PROXY\\n      command:",g /etc/kubernetes/manifests/kube-controller-manager.yaml
+  sed -i "s,--v=2,--v=1,g" /etc/kubernetes/manifests/kube-controller-manager.yaml
   #sed -i "s,command:,env:\\n        - name: https_proxy\\n          value: $PROXY\\n        - name: http_proxy\\n          value: $PROXY\\n      command:",g /etc/kubernetes/manifests/kube-apiserver.yaml
-  sed -i "s,--v=4,--v=2,g" /etc/kubernetes/manifests/kube-apiserver.yaml
-  #sed -i "s,resources:,env:\\n    - name: https_proxy\\n      value: $PROXY\\n    - name: http_proxy\\n      value: $PROXY\\n    resources:",g /etc/kubernetes/manifests/kube-addon-manager.yaml
-  #sed -i "s,command:,env:\\n        - name: https_proxy\\n          value: $PROXY\\n        - name: http_proxy\\n          value: $PROXY\\n      command:",g /etc/kubernetes/manifests/kube-scheduler.yaml
+  sed -i "s,--v=4,--v=1,g" /etc/kubernetes/manifests/kube-apiserver.yaml
+  sed -i "s,resources:,env:\\n    - name: https_proxy\\n      value: $PROXY\\n    - name: http_proxy\\n      value: $PROXY\\n    resources:",g /etc/kubernetes/manifests/kube-addon-manager.yaml
+  sed -i "s,--v=2,--v=1,g" /etc/kubernetes/manifests/kube-addon-manager.yaml
+  sed -i "s,command:,env:\\n        - name: https_proxy\\n          value: $PROXY\\n        - name: http_proxy\\n          value: $PROXY\\n      command:",g /etc/kubernetes/manifests/kube-scheduler.yaml
+  sed -i "s,--v=2,--v=1,g" /etc/kubernetes/manifests/kube-scheduler.yaml
 
   log ''
   log 'close'
