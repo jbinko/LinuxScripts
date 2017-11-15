@@ -24,27 +24,6 @@ adjust_manifests() {
   #sed -i "s|command:|env:\\n        - name: https_proxy\\n          value: $PROXY\\n        - name: http_proxy\\n          value: $PROXY\\n        - name: no_proxy\\n          value: localhost,127.0.0.1\\n      command:|g" /etc/kubernetes/manifests/kube-scheduler.yaml
   sed -i "s|--v=2|--v=1|g" /etc/kubernetes/manifests/kube-scheduler.yaml
 
-
-
-
-
-
-
-
-    CNI_BIN_DIR=/opt/cni/bin
-    mkdir -p $CNI_BIN_DIR
-    curl -x $PROXY --max-time 60 -fsSL https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR ./loopback
-    chown -R root:root $CNI_BIN_DIR
-    chmod -R 755 $CNI_BIN_DIR
-
-
-
-
-
-
-
-
-
   log ''
   log 'close'
   log ''
