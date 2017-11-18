@@ -74,7 +74,7 @@ preprovision() {
   # Copy cluster certificates
   log 'certificates'
   log ''
-  sudo cp /etc/kubernetes/certs/*.crt /usr/local/share/ca-certificates
+  sudo cp /etc/kubernetes/certs/ca.crt /usr/local/share/ca-certificates
   sudo update-ca-certificates
   sudo dpkg-reconfigure -f noninteractive ca-certificates
 
