@@ -19,7 +19,7 @@ adjust_manifests() {
   then
     # Inject proxy to system manifests
 	sed -i "s|command:|env:\\n        - name: https_proxy\\n          value: $PROXY\\n        - name: http_proxy\\n          value: $PROXY\\n        - name: no_proxy\\n          value: localhost,127.0.0.1\\n      command:|g" $file
-	sed -i "s|--v=2|--v=10|g" $file
+	sed -i "s|--v=2|--v=1|g" $file
   fi
 
   file="/etc/kubernetes/manifests/kube-apiserver.yaml"
