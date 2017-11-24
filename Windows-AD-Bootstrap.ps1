@@ -44,7 +44,7 @@ Install-WindowsFeature RSAT-ADDS
 Install-WindowsFeature RSAT-DNS-Server
 
 $adPassword = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
-Install-ADDSForest -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
+Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
 
 $domainAdminCred = New-Object System.Management.Automation.PSCredential ($domainAdminName, ( $domainAdminPassword | ConvertTo-SecureString -asPlainText -Force ))
 $j = Start-Job -credential $domainAdminCred -ScriptBlock {
@@ -52,12 +52,12 @@ $j = Start-Job -credential $domainAdminCred -ScriptBlock {
 	whoami
 
 	# Create new OU
-	New-ADOrganizationalUnit -Name AzureHDInsight -Path $ouPath -PassThru > New-ADOrganizationalUnit.txt
+	New-ADOrganizationalUnit -Name AzureHDInsight -Path $ouPath -PassThru
 
 	# Create User and group
 	New-ADUser -Name $accountName -UserPrincipalName $upn -AccountPassword (ConvertTo-SecureString $password -AsPlainText -force) -PassThru -Enabled $True -PasswordNeverExpires $True
 	New-ADGroup -Name $groupName -GroupScope Global -GroupCategory Security -PassThru
-	Add-ADGroupMember -Identity $groupName -Member $accountName
+	Add-ADGroupMember -Identity $groupName -Member $accountName -PassThru
 
 	# Create and trust Certificate
 	$certFile = "MyLdapsCert.pfx"
