@@ -8,16 +8,6 @@
 	 [Parameter(Mandatory=$True,Position=4)]
 	 [string]$adPasswordText,
 	 [Parameter(Mandatory=$True,Position=5)]
-	 [string]$ouPath,
-	 [Parameter(Mandatory=$True,Position=6)]
-	 [string]$accountName,
-	 [Parameter(Mandatory=$True,Position=7)]
-	 [string]$upn,
-	 [Parameter(Mandatory=$True,Position=8)]
-	 [string]$password,
-	 [Parameter(Mandatory=$True,Position=9)]
-	 [string]$groupName,
-	 [Parameter(Mandatory=$True,Position=10)]
 	 [string]$certPassword
  )
 
@@ -39,19 +29,6 @@ Install-WindowsFeature RSAT-AD-Tools
 Install-WindowsFeature RSAT-ADDS
 Install-WindowsFeature RSAT-DNS-Server
 
-$adPassword = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
-Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
-
-whoami
-
-# Create new OU
-New-ADOrganizationalUnit -Name AzureHDInsight -Path $ouPath -PassThru
-
-# Create User and group
-New-ADUser -Name $accountName -UserPrincipalName $upn -AccountPassword (ConvertTo-SecureString $password -AsPlainText -force) -PassThru -Enabled $True -PasswordNeverExpires $True
-New-ADGroup -Name $groupName -GroupScope Global -GroupCategory Security -PassThru
-Add-ADGroupMember -Identity $groupName -Member $accountName -PassThru
-
 # Create and trust Certificate
 $certFile = "MyLdapsCert.pfx"
 $certName = "*." + $domainName
@@ -65,18 +42,7 @@ Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSec
 Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
 Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
 
-# LDAPS protocol
-Add-Type -AssemblyName System.DirectoryServices.Protocols
-$directoryId = New-Object System.DirectoryServices.Protocols.LdapDirectoryIdentifier("", 389)
-$conn = New-Object System.DirectoryServices.Protocols.LdapConnection($directoryId)
+$adPassword = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
+Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
 
-$attrMod = New-Object System.DirectoryServices.Protocols.DirectoryAttributeModification
-$attrMod.Name = "renewServerCertificate"
-$attrMod.Operation = 0
-$index = $attrMod.Add(1)
-
-$modifyRequest = New-Object System.DirectoryServices.Protocols.ModifyRequest
-$modifyRequest.DistinguishedName = $null
-$index = $modifyRequest.Modifications.Add($attrMod)
-
-$response = $conn.SendRequest($modifyRequest)
+Restart-Computer
