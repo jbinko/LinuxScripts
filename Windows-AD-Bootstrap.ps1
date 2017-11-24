@@ -49,8 +49,10 @@ Install-ADDSForest -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $
 $domainAdminCred = New-Object System.Management.Automation.PSCredential ($domainAdminName, ( $domainAdminPassword | ConvertTo-SecureString -asPlainText -Force ))
 $j = Start-Job -credential $domainAdminCred -ScriptBlock {
 
+	whoami
+
 	# Create new OU
-	New-ADOrganizationalUnit -Name AzureHDInsight -Path $ouPath
+	New-ADOrganizationalUnit -Name AzureHDInsight -Path $ouPath -PassThru > New-ADOrganizationalUnit.txt
 
 	# Create User and group
 	New-ADUser -Name $accountName -UserPrincipalName $upn -AccountPassword (ConvertTo-SecureString $password -AsPlainText -force) -PassThru -Enabled $True -PasswordNeverExpires $True
