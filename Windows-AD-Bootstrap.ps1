@@ -27,6 +27,9 @@ reg add 'HKLM\Software\Microsoft\Windows\CurrentVersion\Internet Settings' /v Pr
 reg add 'HKLM\Software\Microsoft\Windows\CurrentVersion\Internet Settings' /v ProxyServer /t REG_SZ /d $webProxy /f
 netsh winhttp set proxy $webProxy
 
+# Disable FW
+Set-NetFirewallProfile -Profile Domain,Private -Enabled False
+
 # Prepare AD Data Disk
 Get-Disk -Number 2 | Initialize-Disk -Passthru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel "Active Directory Data Disk" -Force -Confirm:$false
 
