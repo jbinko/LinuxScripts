@@ -40,7 +40,7 @@ Install-WindowsFeature RSAT-ADDS
 Install-WindowsFeature RSAT-DNS-Server
 
 $adPassword = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
-Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$false -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
+Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$True -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
 Set-DnsServerDiagnostics -All $true
 
 # Create new OU
@@ -79,3 +79,5 @@ $modifyRequest.DistinguishedName = $null
 $index = $modifyRequest.Modifications.Add($attrMod)
 
 $response = $conn.SendRequest($modifyRequest)
+
+Restart-Computer
