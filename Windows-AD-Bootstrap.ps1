@@ -44,9 +44,9 @@ Set-DnsServerDiagnostics -All $true
 New-ADOrganizationalUnit -Name AzureHDInsight -Path $ouPath
 
 # Create User and group
-$u = New-ADUser -Name $accountName -UserPrincipalName $upn -AccountPassword (ConvertTo-SecureString $password -AsPlainText -force) -PassThru -Enabled $True -PasswordNeverExpires $True
-$g = New-ADGroup -Name $groupName -GroupScope Global -GroupCategory Security
-Add-ADGroupMember $g $u
+New-ADUser -Name $accountName -UserPrincipalName $upn -AccountPassword (ConvertTo-SecureString $password -AsPlainText -force) -PassThru -Enabled $True -PasswordNeverExpires $True
+New-ADGroup -Name $groupName -GroupScope Global -GroupCategory Security -PassThru
+Add-ADGroupMember -Identity $groupName -Member $accountName
 
 # Create and trust Certificate
 $certFile = "MyLdapsCert.pfx"
