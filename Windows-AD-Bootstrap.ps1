@@ -52,7 +52,7 @@ Add-ADGroupMember -Identity $groupName -Member $accountName
 $certFile = "MyLdapsCert.pfx"
 $certName = "*." + $domainName
 $lifetime=Get-Date
-$cert = New-SelfSignedCertificate -DnsName $certName -CertStoreLocation cert:\LocalMachine\My -PassThru
+$cert = New-SelfSignedCertificate -DnsName $certName -CertStoreLocation cert:\LocalMachine\My
 $certThumbprint = $cert.Thumbprint
 $cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
 $certPasswordSecureString = ConvertTo-SecureString $certPassword -AsPlainText -Force
