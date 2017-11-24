@@ -8,20 +8,16 @@
 	 [Parameter(Mandatory=$True,Position=4)]
 	 [string]$adPasswordText,
 	 [Parameter(Mandatory=$True,Position=5)]
-	 [string]$domainAdminName,
-	 [Parameter(Mandatory=$True,Position=6)]
-	 [string]$domainAdminPassword,
-	 [Parameter(Mandatory=$True,Position=7)]
 	 [string]$ouPath,
-	 [Parameter(Mandatory=$True,Position=8)]
+	 [Parameter(Mandatory=$True,Position=6)]
 	 [string]$accountName,
-	 [Parameter(Mandatory=$True,Position=9)]
+	 [Parameter(Mandatory=$True,Position=7)]
 	 [string]$upn,
-	 [Parameter(Mandatory=$True,Position=10)]
+	 [Parameter(Mandatory=$True,Position=8)]
 	 [string]$password,
-	 [Parameter(Mandatory=$True,Position=11)]
+	 [Parameter(Mandatory=$True,Position=9)]
 	 [string]$groupName,
-	 [Parameter(Mandatory=$True,Position=12)]
+	 [Parameter(Mandatory=$True,Position=10)]
 	 [string]$certPassword
  )
 
