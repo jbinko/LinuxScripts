@@ -58,8 +58,8 @@ $certThumbprint = $cert.Thumbprint
 $cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
 $certPasswordSecureString = ConvertTo-SecureString $certPassword -AsPlainText -Force
 Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
-Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPassword
-Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPassword
+Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
+Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
 
 # LDAPS protocol
 Add-Type -AssemblyName System.DirectoryServices.Protocols
