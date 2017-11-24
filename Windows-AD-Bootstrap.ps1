@@ -47,7 +47,7 @@ $adPassword = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
 Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
 Set-DnsServerDiagnostics -All $true
 
-$domainAdminCred = New-Object System.Management.Automation.PSCredential ($domainAdminName, $domainAdminPassword)
+$domainAdminCred = New-Object System.Management.Automation.PSCredential ($domainAdminName, ( $domainAdminPassword | ConvertTo-SecureString -asPlainText -Force ))
 $j = Start-Job -credential $domainAdminCred -ScriptBlock {
 
 	# Create new OU
