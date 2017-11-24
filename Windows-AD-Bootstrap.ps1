@@ -46,46 +46,41 @@ Install-WindowsFeature RSAT-DNS-Server
 $adPassword = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
 Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
 
-$domainAdminCred = New-Object System.Management.Automation.PSCredential ($domainAdminName, ( $domainAdminPassword | ConvertTo-SecureString -asPlainText -Force ))
-$j = Start-Job -credential $domainAdminCred -ScriptBlock {
+whoami
 
-	whoami
+# Create new OU
+New-ADOrganizationalUnit -Name AzureHDInsight -Path $ouPath -PassThru
 
-	# Create new OU
-	New-ADOrganizationalUnit -Name AzureHDInsight -Path $ouPath -PassThru
+# Create User and group
+New-ADUser -Name $accountName -UserPrincipalName $upn -AccountPassword (ConvertTo-SecureString $password -AsPlainText -force) -PassThru -Enabled $True -PasswordNeverExpires $True
+New-ADGroup -Name $groupName -GroupScope Global -GroupCategory Security -PassThru
+Add-ADGroupMember -Identity $groupName -Member $accountName -PassThru
 
-	# Create User and group
-	New-ADUser -Name $accountName -UserPrincipalName $upn -AccountPassword (ConvertTo-SecureString $password -AsPlainText -force) -PassThru -Enabled $True -PasswordNeverExpires $True
-	New-ADGroup -Name $groupName -GroupScope Global -GroupCategory Security -PassThru
-	Add-ADGroupMember -Identity $groupName -Member $accountName -PassThru
+# Create and trust Certificate
+$certFile = "MyLdapsCert.pfx"
+$certName = "*." + $domainName
+$lifetime=Get-Date
+$cert = New-SelfSignedCertificate -DnsName $certName -CertStoreLocation cert:\LocalMachine\My
+$cert
+$certThumbprint = $cert.Thumbprint
+$cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
+$certPasswordSecureString = ConvertTo-SecureString $certPassword -AsPlainText -Force
+Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
+Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
+Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
 
-	# Create and trust Certificate
-	$certFile = "MyLdapsCert.pfx"
-	$certName = "*." + $domainName
-	$lifetime=Get-Date
-	$cert = New-SelfSignedCertificate -DnsName $certName -CertStoreLocation cert:\LocalMachine\My
-	$cert
-	$certThumbprint = $cert.Thumbprint
-	$cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
-	$certPasswordSecureString = ConvertTo-SecureString $certPassword -AsPlainText -Force
-	Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
-	Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
-	Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
+# LDAPS protocol
+Add-Type -AssemblyName System.DirectoryServices.Protocols
+$directoryId = New-Object System.DirectoryServices.Protocols.LdapDirectoryIdentifier("", 389)
+$conn = New-Object System.DirectoryServices.Protocols.LdapConnection($directoryId)
 
-	# LDAPS protocol
-	Add-Type -AssemblyName System.DirectoryServices.Protocols
-	$directoryId = New-Object System.DirectoryServices.Protocols.LdapDirectoryIdentifier("", 389)
-	$conn = New-Object System.DirectoryServices.Protocols.LdapConnection($directoryId)
+$attrMod = New-Object System.DirectoryServices.Protocols.DirectoryAttributeModification
+$attrMod.Name = "renewServerCertificate"
+$attrMod.Operation = 0
+$index = $attrMod.Add(1)
 
-	$attrMod = New-Object System.DirectoryServices.Protocols.DirectoryAttributeModification
-	$attrMod.Name = "renewServerCertificate"
-	$attrMod.Operation = 0
-	$index = $attrMod.Add(1)
+$modifyRequest = New-Object System.DirectoryServices.Protocols.ModifyRequest
+$modifyRequest.DistinguishedName = $null
+$index = $modifyRequest.Modifications.Add($attrMod)
 
-	$modifyRequest = New-Object System.DirectoryServices.Protocols.ModifyRequest
-	$modifyRequest.DistinguishedName = $null
-	$index = $modifyRequest.Modifications.Add($attrMod)
-
-	$response = $conn.SendRequest($modifyRequest)
-}
-($j | Wait-Job) > JobResult.txt
+$response = $conn.SendRequest($modifyRequest)
