@@ -1,3 +1,5 @@
+# Publish-AzureRmVMDscConfiguration ".\HDI_DJ_AD.ps1" -OutputArchivePath ".\HDI_DJ_AD.ps1.zip"
+
 Configuration HDI_DJ_AD 
 {
 	param
