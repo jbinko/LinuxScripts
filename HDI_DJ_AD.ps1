@@ -7,9 +7,7 @@ Configuration HDI_DJ_AD
 		[Parameter(Mandatory=$True)]
 		[string]$domainNetbiosName,
 		[Parameter(Mandatory=$True)]
-		[string]$adPasswordText,
-		[Parameter(Mandatory=$True)]
-		[string]$certPassword
+		[string]$adPasswordText
 	)
 	
 	Import-DscResource -ModuleName xActiveDirectory
@@ -32,7 +30,7 @@ Configuration HDI_DJ_AD
 				$cert
 				$certThumbprint = $cert.Thumbprint
 				$cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
-				$certPasswordSecureString = ConvertTo-SecureString $certPassword -AsPlainText -Force
+				$certPasswordSecureString = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
 				Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
 				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
 				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
