@@ -1,4 +1,4 @@
-# Publish-AzureRmVMDscConfiguration ".\HDI_DJ_AD.ps1" -OutputArchivePath ".\HDI_DJ_AD.ps1.zip"
+# Publish-AzureRmVMDscConfiguration ".\HDI_DJ_AD.ps1" -OutputArchivePath ".\HDI_DJ_AD.ps1.zip" -Force
 
 Configuration HDI_DJ_AD 
 {
@@ -12,7 +12,7 @@ Configuration HDI_DJ_AD
 		[string]$adPasswordText
 	)
 	
-	Import-DscResource -ModuleName xActiveDirectory
+	Import-DscResource -ModuleName xActiveDirectory, PSDesiredStateConfiguration
 	
 	Node localhost
 	{
@@ -26,13 +26,13 @@ Configuration HDI_DJ_AD
 
 				# Create and trust Certificate
 				$certFile = "MyLdapsCert.pfx"
-				$certName = "*." + $domainName
+				$certName = "*." + $using:domainName
 				$lifetime=Get-Date
 				$cert = New-SelfSignedCertificate -DnsName $certName -CertStoreLocation cert:\LocalMachine\My
 				$cert
 				$certThumbprint = $cert.Thumbprint
 				$cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
-				$certPasswordSecureString = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
+				$certPasswordSecureString = ConvertTo-SecureString $using:adPasswordText -AsPlainText -Force
 				Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
 				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
 				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
@@ -44,8 +44,8 @@ Configuration HDI_DJ_AD
 				Install-WindowsFeature RSAT-DNS-Server
 
 				# Configure AD
-				$adPassword = ConvertTo-SecureString $adPasswordText -AsPlainText -Force
-				Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $domainName -DomainNetbiosName $domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
+				$adPassword = ConvertTo-SecureString $using:adPasswordText -AsPlainText -Force
+				Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $using:domainName -DomainNetbiosName $using:domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
 			}
 			GetScript =  { @{} }
 			TestScript = { $false }
