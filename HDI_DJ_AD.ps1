@@ -1,54 +1,114 @@
 # Publish-AzureRmVMDscConfiguration ".\HDI_DJ_AD.ps1" -OutputArchivePath ".\HDI_DJ_AD.ps1.zip" -Force
 
-Configuration HDI_DJ_AD 
+Configuration HDI_DJ_AD
 {
 	param
 	(
-		[Parameter(Mandatory=$True)]
+		[Parameter(Mandatory)]
 		[string]$domainName,
-		[Parameter(Mandatory=$True)]
+		[Parameter(Mandatory)]
 		[string]$domainNetbiosName,
-		[Parameter(Mandatory=$True)]
-		[string]$adPasswordText
+		[Parameter(Mandatory)]
+		[string]$ouPath,
+		[Parameter(Mandatory)]
+		[System.Management.Automation.PSCredential]$adminCred,
+		[Parameter(Mandatory)]
+		[System.Management.Automation.PSCredential]$hdinsightCred
 	)
 	
 	Import-DscResource -ModuleName xActiveDirectory, PSDesiredStateConfiguration
+
+	[System.Management.Automation.PSCredential]$domainCred = New-ObjectSystem.Management.Automation.PSCredential("${$domainName}\$($adminCred.UserName)", $adminCred.Password)
+
+	[String[]]$groupMembers = $hdinsightCred.UserName
 	
 	Node localhost
 	{
-		Script AddADDSFeature {
+		ScriptAddADDSFeature{
 			SetScript = {
-				# Disable FW
-				Set-NetFirewallProfile -Profile Domain,Private -Enabled False
+
+				# DisableFW
+				Set-NetFirewallProfile -Profile Domain, Private -Enabled False
 
 				# Prepare AD Data Disk
-				Get-Disk -Number 2 | Initialize-Disk -Passthru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel "Active Directory Data Disk" -Force -Confirm:$false
+				Get-Disk-Number 2 | Initialize-Disk -Passthru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel "ActiveDirectoryDataDisk" -Force -Confirm:$false
 
-				# Create and trust Certificate
+				#Create and trust Certificate
 				$certFile = "MyLdapsCert.pfx"
-				$certName = "*." + $using:domainName
-				$lifetime=Get-Date
+				$certName = "*." + $domainName
 				$cert = New-SelfSignedCertificate -DnsName $certName -CertStoreLocation cert:\LocalMachine\My
-				$cert
 				$certThumbprint = $cert.Thumbprint
 				$cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
-				$certPasswordSecureString = ConvertTo-SecureString $using:adPasswordText -AsPlainText -Force
+				$certPasswordSecureString = $adminCred.Password
 				Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
-				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
-				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
+				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My-Password $certPasswordSecureString
+				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root-Password $certPasswordSecureString
 
 				# Install AD
+				Install-WindowsFeature DNS
 				Install-WindowsFeature AD-Domain-Services
 				Install-WindowsFeature RSAT-AD-Tools
 				Install-WindowsFeature RSAT-ADDS
 				Install-WindowsFeature RSAT-DNS-Server
 
-				# Configure AD
-				$adPassword = ConvertTo-SecureString $using:adPasswordText -AsPlainText -Force
-				Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "F:\NTDS" -DomainMode "Win2012R2" -DomainName $using:domainName -DomainNetbiosName $using:domainNetbiosName -ForestMode "Win2012R2" -InstallDns:$true -LogPath "F:\NTDS" -NoRebootOnCompletion:$False -SysvolPath "F:\SYSVOL" -Force:$true -SafeModeAdministratorPassword $adPassword
+				# Configure DNS
+				Set-DnsServerDiagnostics -All $true
 			}
-			GetScript =  { @{} }
+			GetScript = { @{} }
 			TestScript = { $false }
+		}
+
+		xADDomain FirstDS
+		{
+			DomainName = $domainName
+			DomainNetBIOSName = $domainNetBIOSName
+			DomainAdministratorCredential = $domainCred
+			SafemodeAdministratorPassword = $domainCred
+			DatabasePath = "F:\NTDS"
+			LogPath = "F:\NTDS"
+			SysvolPath = "F:\SYSVOL"
+			DependsOn = "[Script]AddADDSFeature"
+		}
+
+		xWaitForADDomain DscForestWait
+		{
+			DomainName = $domainName
+			DomainUserCredential = $domainCred
+			RetryCount = 20
+			RetryIntervalSec = 30
+			DependsOn = "[xADDomain]FirstDS"
+		}
+
+		xADUser HDIUsrSvc
+		{
+			DomainName = $domainName
+			DomainAdministratorCredential = $domainCred
+			UserName = $hdinsightCred.UserName
+			Password = $hdinsightCred
+			UserPrincipalName = -join($hdinsightCred.UserName, "@", $domainName)
+			Enabled = $True
+			PasswordNeverExpires = $True
+			Ensure = "Present"
+			DependsOn = "[xWaitForADDomain]DscForestWait"
+		}
+
+		xADGroup HDIGroup
+		{
+			GroupName = hdinsightusers
+			GroupScope = Global
+			Category = Security
+			Members = $groupMembers
+			Ensure = 'Present'
+			DependsOn = "[xADUser]HDIUsrSvc"
+		}
+
+		xADOrganizationalUnit HDIOU
+		{
+			Name = AzureHDInsight
+			Path = $ouPath
+			ProtectedFromAccidentalDeletion = $False
+			Ensure = 'Present'
+			DependsOn = "[xWaitForADDomain]DscForestWait"
 		}
 	}
 }
