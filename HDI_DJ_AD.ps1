@@ -26,6 +26,12 @@ Configuration HDI_DJ_AD
 	
 	Node localhost
 	{
+		LocalConfigurationManager
+        {
+       	    ConfigurationMode = 'ApplyOnly'
+            RebootNodeIfNeeded = $true
+        }
+
 		Script AddADDSFeature{
 			SetScript = {
 
