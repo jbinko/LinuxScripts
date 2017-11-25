@@ -49,8 +49,8 @@ Configuration HDI_DJ_AD
 				$cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
 				$certPasswordSecureString = $adminCred.Password
 				Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
-				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My-Password $certPasswordSecureString
-				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root-Password $certPasswordSecureString
+				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
+				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
 
 				# Install AD
 				Install-WindowsFeature DNS
