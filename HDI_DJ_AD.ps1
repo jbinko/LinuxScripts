@@ -33,7 +33,7 @@ Configuration HDI_DJ_AD
 				Set-NetFirewallProfile -Profile Domain, Private -Enabled False
 
 				# Prepare AD Data Disk
-				Get-Disk-Number 2 | Initialize-Disk -Passthru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel "ActiveDirectoryDataDisk" -Force -Confirm:$false
+				Get-Disk -Number 2 | Initialize-Disk -Passthru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel "ActiveDirectoryDataDisk" -Force -Confirm:$false
 
 				#Create and trust Certificate
 				$certFile = "MyLdapsCert.pfx"
