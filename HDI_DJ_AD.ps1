@@ -1,4 +1,9 @@
 # Publish-AzureRmVMDscConfiguration ".\HDI_DJ_AD.ps1" -OutputArchivePath ".\HDI_DJ_AD.ps1.zip" -Force
+# Testing:
+#	1. Extract zip
+#	2. Add to the .\HDI_DJ_AD.ps1 at the end command HDI_DJ_AD
+#	3. Run the script .\HDI_DJ_AD.ps1
+#	4. Start-DscConfiguration -Path "HDI_DJ_AD" -Wait -Force -Verbose -ComputerName localhost
 
 Configuration HDI_DJ_AD
 {
@@ -43,11 +48,11 @@ Configuration HDI_DJ_AD
 
 				#Create and trust Certificate
 				$certFile = "MyLdapsCert.pfx"
-				$certName = "*." + $domainName
+				$certName = "*." + $using:domainName
 				$cert = New-SelfSignedCertificate -DnsName $certName -CertStoreLocation cert:\LocalMachine\My
 				$certThumbprint = $cert.Thumbprint
 				$cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
-				$certPasswordSecureString = $adminCred.Password
+				$certPasswordSecureString = $using:adminCred.Password
 				Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
 				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
 				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
