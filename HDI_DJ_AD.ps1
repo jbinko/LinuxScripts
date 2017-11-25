@@ -18,7 +18,7 @@ Configuration HDI_DJ_AD
 	
 	Import-DscResource -ModuleName xActiveDirectory, PSDesiredStateConfiguration
 
-	[System.Management.Automation.PSCredential]$domainCred = New-ObjectSystem.Management.Automation.PSCredential("${$domainName}\$($adminCred.UserName)", $adminCred.Password)
+	[System.Management.Automation.PSCredential]$domainCred = New-Object System.Management.Automation.PSCredential("${$domainName}\$($adminCred.UserName)", $adminCred.Password)
 
 	[String[]]$groupMembers = $hdinsightCred.UserName
 	
