@@ -11,12 +11,14 @@ Configuration HDI_DJ_AD
 		[Parameter(Mandatory)]
 		[string]$ouPath,
 		[Parameter(Mandatory)]
+		[string]$dnsServerZone,
+		[Parameter(Mandatory)]
 		[System.Management.Automation.PSCredential]$adminCred,
 		[Parameter(Mandatory)]
 		[System.Management.Automation.PSCredential]$hdinsightCred
 	)
 	
-	Import-DscResource -ModuleName xActiveDirectory, PSDesiredStateConfiguration
+	Import-DscResource -ModuleName xActiveDirectory, xDnsServer, PSDesiredStateConfiguration
 
 	[System.Management.Automation.PSCredential]$domainCred = New-Object System.Management.Automation.PSCredential("${$domainName}\$($adminCred.UserName)", $adminCred.Password)
 
@@ -24,7 +26,7 @@ Configuration HDI_DJ_AD
 	
 	Node localhost
 	{
-		ScriptAddADDSFeature{
+		Script AddADDSFeature{
 			SetScript = {
 
 				# DisableFW
@@ -94,9 +96,9 @@ Configuration HDI_DJ_AD
 
 		xADGroup HDIGroup
 		{
-			GroupName = hdinsightusers
-			GroupScope = Global
-			Category = Security
+			GroupName = 'hdinsightusers'
+			GroupScope = 'Global'
+			Category = 'Security'
 			Members = $groupMembers
 			Ensure = 'Present'
 			DependsOn = "[xADUser]HDIUsrSvc"
@@ -104,11 +106,46 @@ Configuration HDI_DJ_AD
 
 		xADOrganizationalUnit HDIOU
 		{
-			Name = AzureHDInsight
+			Name = 'AzureHDInsight'
 			Path = $ouPath
 			ProtectedFromAccidentalDeletion = $False
 			Ensure = 'Present'
 			DependsOn = "[xWaitForADDomain]DscForestWait"
+		}
+		
+		Script ADRefreshCerts
+		{
+			SetScript = {
+				
+				Add-Type -AssemblyName System.DirectoryServices.Protocols
+				
+				$directoryId = New-Object System.DirectoryServices.Protocols.LdapDirectoryIdentifier("", 389)
+				$conn = New-Object System.DirectoryServices.Protocols.LdapConnection($directoryId)
+				
+				$attrMod = New-Object System.DirectoryServices.Protocols.DirectoryAttributeModification
+				$attrMod.Name = "renewServerCertificate"
+				$attrMod.Operation = 0
+				$index = $attrMod.Add(1)
+				
+				$modifyRequest = New-Object System.DirectoryServices.Protocols.ModifyRequest
+				$modifyRequest.DistinguishedName = $null
+				$index = $modifyRequest.Modifications.Add($attrMod)
+				
+				$response = $conn.SendRequest($modifyRequest)
+			}
+			
+			GetScript =  { @{} }
+			TestScript = { $false}
+			DependsOn = "[xWaitForADDomain]DscForestWait"
+		}
+		
+		xDnsServerADZone addReverseADZone
+		{
+			Name = $dnsServerZone
+			DynamicUpdate = 'Secure'
+			ReplicationScope = 'Forest'
+			Ensure = 'Present'
+			DependsOn = "[Script]ADRefreshCerts"
 		}
 	}
 }
