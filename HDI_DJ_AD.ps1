@@ -37,7 +37,7 @@ Configuration HDI_DJ_AD
             RebootNodeIfNeeded = $true
         }
 
-		Script AddADDSFeature{
+		Script AddADDSFeature {
 			SetScript = {
 
 				# DisableFW
@@ -45,12 +45,6 @@ Configuration HDI_DJ_AD
 
 				# Prepare AD Data Disk
 				Get-Disk -Number 2 | Initialize-Disk -Passthru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel "ActiveDirectoryDataDisk" -Force -Confirm:$false
-
-				# Install CA
-				# http://www.aventistech.com/2016/06/05/powershell-install-certificate-authority-ca/
-				# https://blogs.msdn.microsoft.com/microsoftrservertigerteam/2017/04/10/step-by-step-guide-to-setup-ldaps-on-windows-server/
-				#Install-WindowsFeature AD-Certificate -IncludeManagementTools 
-				#Install-AdcsCertificationAuthority -CACommonName $env:computername -CAType StandaloneRootCA -HashAlgorithmName SHA256 -KeyLength 2048 -ValidityPeriod Years -ValidityPeriodUnits 5 -Force
 
 				# Install AD
 				Install-WindowsFeature DNS
@@ -71,6 +65,27 @@ Configuration HDI_DJ_AD
 				$destination = "C:\Windows\Temp\AddADDSFeature.txt"
 				return Test-Path -Path $destination
 			}
+		}
+
+		Script AddCAFeature {
+			SetScript = {
+
+				# Install CA
+				# http://www.aventistech.com/2016/06/05/powershell-install-certificate-authority-ca/
+				# https://blogs.msdn.microsoft.com/microsoftrservertigerteam/2017/04/10/step-by-step-guide-to-setup-ldaps-on-windows-server/
+				Install-WindowsFeature AD-Certificate -IncludeManagementTools 
+				Install-AdcsCertificationAuthority -CACommonName $env:computername -CAType EnterpriseRootCa -HashAlgorithmName SHA256 -KeyLength 2048 -ValidityPeriod Years -ValidityPeriodUnits 5 -Force
+
+				$destination = "C:\Windows\Temp\AddCAFeature.txt"
+				New-Item -Force -Path $destination
+			}
+			GetScript = { @{} }
+			TestScript =
+			{
+				$destination = "C:\Windows\Temp\AddCAFeature.txt"
+				return Test-Path -Path $destination
+			}
+			DependsOn = "[Script]AddADDSFeature"
 		}
 
 		xADDomain FirstDS
