@@ -79,38 +79,6 @@ Configuration HDI_DJ_AD
 			DependsOn = "[Script]AddADDSFeature"
 		}
 
-		xADUser HDIUsrSvc
-		{
-			DomainName = $domainName
-			DomainAdministratorCredential = $domainCred
-			UserName = $hdinsightCred.UserName
-			Password = $hdinsightCred
-			UserPrincipalName = -join($hdinsightCred.UserName, "@", $domainName)
-			Enabled = $True
-			PasswordNeverExpires = $True
-			Ensure = "Present"
-			DependsOn = "[xADDomain]FirstDS"
-		}
-
-		xADGroup HDIGroup
-		{
-			GroupName = 'hdinsightusers'
-			GroupScope = 'Global'
-			Category = 'Security'
-			Members = $groupMembers
-			Ensure = 'Present'
-			DependsOn = "[xADUser]HDIUsrSvc"
-		}
-
-		xADOrganizationalUnit HDIOU
-		{
-			Name = 'AzureHDInsight'
-			Path = $ouPath
-			ProtectedFromAccidentalDeletion = $False
-			Ensure = 'Present'
-			DependsOn = "[xADDomain]FirstDS"
-		}
-		
 		Script AddCAFeature {
 			SetScript = {
 
@@ -131,14 +99,65 @@ Configuration HDI_DJ_AD
 			}
 			DependsOn = "[xADDomain]FirstDS"
 		}
-		
-		xDnsServerADZone addReverseADZone
+
+		xADOrganizationalUnit HDIOU
 		{
-			Name = $dnsServerZone
-			DynamicUpdate = 'Secure'
-			ReplicationScope = 'Forest'
+			Name = 'AzureHDInsight'
+			Path = $ouPath
+			ProtectedFromAccidentalDeletion = $False
 			Ensure = 'Present'
-			DependsOn = "[Script]AddCAFeature"
+			DependsOn = "[xADDomain]FirstDS"
 		}
+
+		xADUser HDIUsrSvc
+		{
+			DomainName = $domainName
+			DomainAdministratorCredential = $domainCred
+			UserName = $hdinsightCred.UserName
+			Password = $hdinsightCred
+			UserPrincipalName = -join($hdinsightCred.UserName, "@", $domainName)
+			Enabled = $True
+			PasswordNeverExpires = $True
+			Ensure = "Present"
+			DependsOn = "[xADOrganizationalUnit]HDIOU"
+		}
+
+		xADGroup HDIGroup
+		{
+			GroupName = 'hdinsightusers'
+			GroupScope = 'Global'
+			Category = 'Security'
+			Members = $groupMembers
+			Ensure = 'Present'
+			DependsOn = "[xADUser]HDIUsrSvc"
+		}
+
+		Script MoveADObjects {
+			SetScript = {
+
+				$ou = "OU=AzureHDInsight,$using:ouPath"
+				Get-ADUser $using:hdinsightCred.UserName -Credential $using:domainCred | Move-ADObject -TargetPath $ou -Credential $using:domainCred
+				Get-ADGroup 'hdinsightusers' -Credential $using:domainCred | Move-ADObject -TargetPath $ou -Credential $using:domainCred
+
+				$destination = "C:\Windows\Temp\MoveADObjects.txt"
+				New-Item -Force -Path $destination
+			}
+			GetScript = { @{} }
+			TestScript =
+			{
+				$destination = "C:\Windows\Temp\MoveADObjects.txt"
+				return Test-Path -Path $destination
+			}
+			DependsOn = "[xADGroup]HDIGroup"
+		}
+
+		#xDnsServerADZone addReverseADZone
+		#{
+		#	Name = $dnsServerZone
+		#	DynamicUpdate = 'Secure'
+		#	ReplicationScope = 'Forest'
+		#	Ensure = 'Present'
+		#	DependsOn = "[Script]AddCAFeature"
+		#}
 	}
 }
