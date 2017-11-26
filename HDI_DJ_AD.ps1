@@ -79,15 +79,6 @@ Configuration HDI_DJ_AD
 			DependsOn = "[Script]AddADDSFeature"
 		}
 
-		xWaitForADDomain DscForestWait
-		{
-			DomainName = $domainName
-			DomainUserCredential = $domainCred
-			RetryCount = 20
-			RetryIntervalSec = 30
-			DependsOn = "[xADDomain]FirstDS"
-		}
-
 		xADUser HDIUsrSvc
 		{
 			DomainName = $domainName
@@ -98,7 +89,7 @@ Configuration HDI_DJ_AD
 			Enabled = $True
 			PasswordNeverExpires = $True
 			Ensure = "Present"
-			DependsOn = "[xWaitForADDomain]DscForestWait"
+			DependsOn = "[xADDomain]FirstDS"
 		}
 
 		xADGroup HDIGroup
@@ -117,7 +108,7 @@ Configuration HDI_DJ_AD
 			Path = $ouPath
 			ProtectedFromAccidentalDeletion = $False
 			Ensure = 'Present'
-			DependsOn = "[xWaitForADDomain]DscForestWait"
+			DependsOn = "[xADDomain]FirstDS"
 		}
 		
 		Script AddCAFeature {
@@ -138,7 +129,7 @@ Configuration HDI_DJ_AD
 				$destination = "C:\Windows\Temp\AddCAFeature.txt"
 				return Test-Path -Path $destination
 			}
-			DependsOn = "[xWaitForADDomain]DscForestWait"
+			DependsOn = "[xADDomain]FirstDS"
 		}
 		
 		Script ADRefreshCerts
