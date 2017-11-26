@@ -46,16 +46,11 @@ Configuration HDI_DJ_AD
 				# Prepare AD Data Disk
 				Get-Disk -Number 2 | Initialize-Disk -Passthru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -NewFileSystemLabel "ActiveDirectoryDataDisk" -Force -Confirm:$false
 
-				#Create and trust Certificate
-				$certFile = "MyLdapsCert.pfx"
-				$certName = "*." + $using:domainName
-				$cert = New-SelfSignedCertificate -DnsName $certName -CertStoreLocation cert:\LocalMachine\My
-				$certThumbprint = $cert.Thumbprint
-				$cert = (Get-ChildItem -Path cert:\LocalMachine\My\$certThumbprint)
-				$certPasswordSecureString = $using:adminCred.Password
-				Export-PfxCertificate -Cert $cert -FilePath $certFile -Password $certPasswordSecureString
-				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\My -Password $certPasswordSecureString
-				Import-PfxCertificate -FilePath $certFile -CertStoreLocation Cert:\LocalMachine\Root -Password $certPasswordSecureString
+				# Install CA
+				# http://www.aventistech.com/2016/06/05/powershell-install-certificate-authority-ca/
+				# https://blogs.msdn.microsoft.com/microsoftrservertigerteam/2017/04/10/step-by-step-guide-to-setup-ldaps-on-windows-server/
+				Install-WindowsFeature AD-Certificate -IncludeManagementTools 
+				Install-AdcsCertificationAuthority -CACommonName $env:computername -CAType StandaloneRootCA -HashAlgorithmName SHA256 -KeyLength 2048 -ValidityPeriod Years -ValidityPeriodUnits 5 -Force
 
 				# Install AD
 				Install-WindowsFeature DNS
@@ -66,9 +61,16 @@ Configuration HDI_DJ_AD
 
 				# Configure DNS
 				Set-DnsServerDiagnostics -All $true
+
+				$destination = "C:\Windows\Temp\AddADDSFeature.txt"
+				New-Item -Force -Path $destination
 			}
 			GetScript = { @{} }
-			TestScript = { $false }
+			TestScript =
+			{
+				$destination = "C:\Windows\Temp\AddADDSFeature.txt"
+				return Test-Path -Path $destination
+			}
 		}
 
 		xADDomain FirstDS
