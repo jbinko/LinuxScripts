@@ -67,27 +67,6 @@ Configuration HDI_DJ_AD
 			}
 		}
 
-		Script AddCAFeature {
-			SetScript = {
-
-				# Install CA
-				# http://www.aventistech.com/2016/06/05/powershell-install-certificate-authority-ca/
-				# https://blogs.msdn.microsoft.com/microsoftrservertigerteam/2017/04/10/step-by-step-guide-to-setup-ldaps-on-windows-server/
-				Install-WindowsFeature AD-Certificate -IncludeManagementTools 
-				Install-AdcsCertificationAuthority -CACommonName $env:computername -CAType EnterpriseRootCa -HashAlgorithmName SHA256 -KeyLength 2048 -ValidityPeriod Years -ValidityPeriodUnits 5 -Force
-
-				$destination = "C:\Windows\Temp\AddCAFeature.txt"
-				New-Item -Force -Path $destination
-			}
-			GetScript = { @{} }
-			TestScript =
-			{
-				$destination = "C:\Windows\Temp\AddCAFeature.txt"
-				return Test-Path -Path $destination
-			}
-			DependsOn = "[Script]AddADDSFeature"
-		}
-
 		xADDomain FirstDS
 		{
 			DomainName = $domainName
@@ -141,6 +120,27 @@ Configuration HDI_DJ_AD
 			DependsOn = "[xWaitForADDomain]DscForestWait"
 		}
 		
+		Script AddCAFeature {
+			SetScript = {
+
+				# Install CA
+				# http://www.aventistech.com/2016/06/05/powershell-install-certificate-authority-ca/
+				# https://blogs.msdn.microsoft.com/microsoftrservertigerteam/2017/04/10/step-by-step-guide-to-setup-ldaps-on-windows-server/
+				Install-WindowsFeature AD-Certificate -IncludeManagementTools 
+				Install-AdcsCertificationAuthority -CACommonName $env:computername -CAType EnterpriseRootCa -HashAlgorithmName SHA256 -KeyLength 2048 -ValidityPeriod Years -ValidityPeriodUnits 5 -Force
+
+				$destination = "C:\Windows\Temp\AddCAFeature.txt"
+				New-Item -Force -Path $destination
+			}
+			GetScript = { @{} }
+			TestScript =
+			{
+				$destination = "C:\Windows\Temp\AddCAFeature.txt"
+				return Test-Path -Path $destination
+			}
+			DependsOn = "[xWaitForADDomain]DscForestWait"
+		}
+		
 		Script ADRefreshCerts
 		{
 			SetScript = {
@@ -160,11 +160,18 @@ Configuration HDI_DJ_AD
 				$index = $modifyRequest.Modifications.Add($attrMod)
 				
 				$response = $conn.SendRequest($modifyRequest)
+
+				$destination = "C:\Windows\Temp\ADRefreshCerts.txt"
+				New-Item -Force -Path $destination
 			}
 			
 			GetScript =  { @{} }
-			TestScript = { $false}
-			DependsOn = "[xWaitForADDomain]DscForestWait"
+			TestScript =
+			{
+				$destination = "C:\Windows\Temp\ADRefreshCerts.txt"
+				return Test-Path -Path $destination
+			}
+			DependsOn = "[Script]AddCAFeature"
 		}
 		
 		xDnsServerADZone addReverseADZone
