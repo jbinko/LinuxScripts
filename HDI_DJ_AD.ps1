@@ -132,46 +132,13 @@ Configuration HDI_DJ_AD
 			DependsOn = "[xADDomain]FirstDS"
 		}
 		
-		Script ADRefreshCerts
-		{
-			SetScript = {
-				
-				Add-Type -AssemblyName System.DirectoryServices.Protocols
-				
-				$directoryId = New-Object System.DirectoryServices.Protocols.LdapDirectoryIdentifier("", 389)
-				$conn = New-Object System.DirectoryServices.Protocols.LdapConnection($directoryId)
-				
-				$attrMod = New-Object System.DirectoryServices.Protocols.DirectoryAttributeModification
-				$attrMod.Name = "renewServerCertificate"
-				$attrMod.Operation = 0
-				$index = $attrMod.Add(1)
-				
-				$modifyRequest = New-Object System.DirectoryServices.Protocols.ModifyRequest
-				$modifyRequest.DistinguishedName = $null
-				$index = $modifyRequest.Modifications.Add($attrMod)
-				
-				$response = $conn.SendRequest($modifyRequest)
-
-				$destination = "C:\Windows\Temp\ADRefreshCerts.txt"
-				New-Item -Force -Path $destination
-			}
-			
-			GetScript =  { @{} }
-			TestScript =
-			{
-				$destination = "C:\Windows\Temp\ADRefreshCerts.txt"
-				return Test-Path -Path $destination
-			}
-			DependsOn = "[Script]AddCAFeature"
-		}
-		
 		xDnsServerADZone addReverseADZone
 		{
 			Name = $dnsServerZone
 			DynamicUpdate = 'Secure'
 			ReplicationScope = 'Forest'
 			Ensure = 'Present'
-			DependsOn = "[Script]ADRefreshCerts"
+			DependsOn = "[Script]AddCAFeature"
 		}
 	}
 }
