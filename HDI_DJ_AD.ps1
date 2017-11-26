@@ -148,7 +148,7 @@ Configuration HDI_DJ_AD
 				$destination = "C:\Windows\Temp\MoveADObjects.txt"
 				return Test-Path -Path $destination
 			}
-			PsDscRunAsCredential = $using:domainCred
+			PsDscRunAsCredential = $domainCred
 			DependsOn = "[xADGroup]HDIGroup"
 		}
 
@@ -167,7 +167,7 @@ Configuration HDI_DJ_AD
 				$destination = "C:\Windows\Temp\ConfigureDNS.txt"
 				return Test-Path -Path $destination
 			}
-			PsDscRunAsCredential = $using:domainCred
+			PsDscRunAsCredential = $domainCred
 			DependsOn = "[Script]MoveADObjects"
 		}
 	}
