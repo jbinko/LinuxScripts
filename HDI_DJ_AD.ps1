@@ -136,8 +136,8 @@ Configuration HDI_DJ_AD
 			SetScript = {
 
 				$ou = "OU=AzureHDInsight,$using:ouPath"
-				Get-ADUser $using:hdinsightCred.UserName -Credential $using:domainCred | Move-ADObject -TargetPath $ou -Credential $using:domainCred
-				Get-ADGroup 'hdinsightusers' -Credential $using:domainCred | Move-ADObject -TargetPath $ou -Credential $using:domainCred
+				Get-ADUser $using:hdinsightCred.UserName | Move-ADObject -TargetPath $ou
+				Get-ADGroup 'hdinsightusers' | Move-ADObject -TargetPath $ou
 
 				$destination = "C:\Windows\Temp\MoveADObjects.txt"
 				New-Item -Force -Path $destination
@@ -148,16 +148,27 @@ Configuration HDI_DJ_AD
 				$destination = "C:\Windows\Temp\MoveADObjects.txt"
 				return Test-Path -Path $destination
 			}
+			PsDscRunAsCredential = $using:domainCred
 			DependsOn = "[xADGroup]HDIGroup"
 		}
 
-		#xDnsServerADZone addReverseADZone
-		#{
-		#	Name = $dnsServerZone
-		#	DynamicUpdate = 'Secure'
-		#	ReplicationScope = 'Forest'
-		#	Ensure = 'Present'
-		#	DependsOn = "[Script]AddCAFeature"
-		#}
+		Script ConfigureDNS {
+			SetScript = {
+
+				# Add Reverse AD Zone
+				Add-DnsServerPrimaryZone -DynamicUpdate 'Secure' -NetworkId $using:dnsServerZone -ReplicationScope 'Forest'
+
+				$destination = "C:\Windows\Temp\ConfigureDNS.txt"
+				New-Item -Force -Path $destination
+			}
+			GetScript = { @{} }
+			TestScript =
+			{
+				$destination = "C:\Windows\Temp\ConfigureDNS.txt"
+				return Test-Path -Path $destination
+			}
+			PsDscRunAsCredential = $using:domainCred
+			DependsOn = "[Script]MoveADObjects"
+		}
 	}
 }
