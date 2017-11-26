@@ -49,8 +49,8 @@ Configuration HDI_DJ_AD
 				# Install CA
 				# http://www.aventistech.com/2016/06/05/powershell-install-certificate-authority-ca/
 				# https://blogs.msdn.microsoft.com/microsoftrservertigerteam/2017/04/10/step-by-step-guide-to-setup-ldaps-on-windows-server/
-				Install-WindowsFeature AD-Certificate -IncludeManagementTools 
-				Install-AdcsCertificationAuthority -CACommonName $env:computername -CAType StandaloneRootCA -HashAlgorithmName SHA256 -KeyLength 2048 -ValidityPeriod Years -ValidityPeriodUnits 5 -Force
+				#Install-WindowsFeature AD-Certificate -IncludeManagementTools 
+				#Install-AdcsCertificationAuthority -CACommonName $env:computername -CAType StandaloneRootCA -HashAlgorithmName SHA256 -KeyLength 2048 -ValidityPeriod Years -ValidityPeriodUnits 5 -Force
 
 				# Install AD
 				Install-WindowsFeature DNS
