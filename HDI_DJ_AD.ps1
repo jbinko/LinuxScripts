@@ -151,7 +151,8 @@ Configuration HDI_DJ_AD
 				$dnsHostWrite = [GUID]::Parse('72e39547-7b18-11d1-adef-00c04fd8d5cd')
 				$spnWrite = [GUID]::Parse('f3a64788-5306-11d1-a9c5-0000f80367c1')
 				
-				$ou = "OU=AzureHDInsight,$json.OUPath"
+				$ouPath = $json.OUPath
+				$ou = "OU=AzureHDInsight,$ouPath"
 				$acl = Get-Acl -Path "AD:\$ou"
 				
 				$adAccount = New-Object System.Security.Principal.NTAccount $json.DomainName, $json.HDIUserName
