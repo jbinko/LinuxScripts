@@ -132,43 +132,58 @@ Configuration HDI_DJ_AD
 			DependsOn = "[xADUser]HDIUsrSvc"
 		}
 
-		Script MoveADObjects {
+		Script PostConfiguration {
 			SetScript = {
 
+				# Ser required permissions for hdinsight svc account
+				# https://stackoverflow.com/questions/28864220/join-domain-rights-using-powershell
+				Import-Module ActiveDirectory
+				
+				$userGuid = [GUID]::Parse('bf967aba-0de6-11d0-a285-00aa003049e2')
+				$computerGuid = [GUID]::Parse('bf967a86-0de6-11d0-a285-00aa003049e2')
+				$accountGuid = [GUID]::Parse('2628a46a-a6ad-4ae0-b854-2b12d9fe6f9e')
+				$accountRestrictionsGuid = [GUID]::Parse('4c164200-20c0-11d0-a768-00aa006e0529')
+				$resetPasswordGuid = [GUID]::Parse('00299570-246d-11d0-a768-00aa006e0529')
+				$dnsHostWrite = [GUID]::Parse('72e39547-7b18-11d1-adef-00c04fd8d5cd')
+				$spnWrite = [GUID]::Parse('f3a64788-5306-11d1-a9c5-0000f80367c1')
+				
+				$ou = "OU=AzureHDInsight,$using:ouPath"
+				$acl = Get-Acl -Path "AD:\$ou"
+				
+				$adAccount = New-Object System.Security.Principal.NTAccount $using:domainName, $using:hdinsightCred.UserName
+
+				$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adAccount,'GenericAll','Allow',$userGuid,'None'))
+				$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adAccount,'GenericAll','Allow',$computerGuid,'None'))
+				$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adAccount,'GenericAll','Allow',$accountGuid,'None'))
+				$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adAccount,'ReadProperty,WriteProperty','Allow',$accountRestrictionsGuid,'None'))
+				$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adAccount,'Self','Allow',$dnsHostWrite,'None'))
+				$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adAccount,'Self','Allow',$spnWrite,'None'))
+				$acl.AddAccessRule((New-Object System.DirectoryServices.ExtendedRightAccessRule $adAccount,'Allow',$resetPasswordGuid,'None'))
+				
+				Set-ACl -Path "AD:\$ou" -AclObject $acl
+
+				# Add permisions to create reverse DNS proxy rules
+				Add-ADGroupMember DnsUpdateProxy $using:hdinsightCred.UserName
+
+				# Move AD Objects
 				$ou = "OU=AzureHDInsight,$using:ouPath"
 				Get-ADUser $using:hdinsightCred.UserName | Move-ADObject -TargetPath $ou
 				Get-ADGroup 'hdinsightusers' | Move-ADObject -TargetPath $ou
 
-				$destination = "C:\Windows\Temp\MoveADObjects.txt"
+				# Add Reverse AD Zone
+				Add-DnsServerPrimaryZone -DynamicUpdate 'Secure' -NetworkId $using:dnsServerZone -ReplicationScope 'Forest'
+
+				$destination = "C:\Windows\Temp\PostConfiguration.txt"
 				New-Item -Force -Path $destination
 			}
 			GetScript = { @{} }
 			TestScript =
 			{
-				$destination = "C:\Windows\Temp\MoveADObjects.txt"
+				$destination = "C:\Windows\Temp\PostConfiguration.txt"
 				return Test-Path -Path $destination
 			}
 			PsDscRunAsCredential = $domainCred
 			DependsOn = "[xADGroup]HDIGroup"
-		}
-
-		Script ConfigureDNS {
-			SetScript = {
-
-				# Add Reverse AD Zone
-				Add-DnsServerPrimaryZone -DynamicUpdate 'Secure' -NetworkId $using:dnsServerZone -ReplicationScope 'Forest'
-
-				$destination = "C:\Windows\Temp\ConfigureDNS.txt"
-				New-Item -Force -Path $destination
-			}
-			GetScript = { @{} }
-			TestScript =
-			{
-				$destination = "C:\Windows\Temp\ConfigureDNS.txt"
-				return Test-Path -Path $destination
-			}
-			PsDscRunAsCredential = $domainCred
-			DependsOn = "[Script]MoveADObjects"
 		}
 	}
 }
