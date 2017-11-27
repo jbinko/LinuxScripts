@@ -56,8 +56,9 @@ Configuration HDI_DJ_AD
 				# Configure DNS
 				Set-DnsServerDiagnostics -All $true
 
+				# Store some variables to use later
 				$destination = "C:\Windows\Temp\AddADDSFeature.txt"
-				New-Item -Force -Path $destination
+				ConvertTo-Json -Compress @{DomainName=$using:domainName;OUPath=$using:ouPath;DNSHDIZone=$using:dnsServerZone;HDIUserName=$using:hdinsightCred.UserName} | Set-Content -Path $destination
 			}
 			GetScript = { @{} }
 			TestScript =
@@ -135,6 +136,9 @@ Configuration HDI_DJ_AD
 		Script PostConfiguration {
 			SetScript = {
 
+				# Get state to workaround $using with PsDscRunAsCredential
+				$json = Get-Content -Raw -Path "C:\Windows\Temp\AddADDSFeature.txt" | ConvertFrom-Json
+
 				# Ser required permissions for hdinsight svc account
 				# https://stackoverflow.com/questions/28864220/join-domain-rights-using-powershell
 				Import-Module ActiveDirectory
@@ -147,10 +151,10 @@ Configuration HDI_DJ_AD
 				$dnsHostWrite = [GUID]::Parse('72e39547-7b18-11d1-adef-00c04fd8d5cd')
 				$spnWrite = [GUID]::Parse('f3a64788-5306-11d1-a9c5-0000f80367c1')
 				
-				$ou = "OU=AzureHDInsight,$using:ouPath"
+				$ou = "OU=AzureHDInsight,$json.OUPath"
 				$acl = Get-Acl -Path "AD:\$ou"
 				
-				$adAccount = New-Object System.Security.Principal.NTAccount $using:domainName, $using:hdinsightCred.UserName
+				$adAccount = New-Object System.Security.Principal.NTAccount $json.DomainName, $json.HDIUserName
 
 				$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adAccount,'GenericAll','Allow',$userGuid,'None'))
 				$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adAccount,'GenericAll','Allow',$computerGuid,'None'))
@@ -163,15 +167,14 @@ Configuration HDI_DJ_AD
 				Set-ACl -Path "AD:\$ou" -AclObject $acl
 
 				# Add permisions to create reverse DNS proxy rules
-				Add-ADGroupMember DnsUpdateProxy $using:hdinsightCred.UserName
+				Add-ADGroupMember DnsUpdateProxy $json.HDIUserName
 
 				# Move AD Objects
-				$ou = "OU=AzureHDInsight,$using:ouPath"
-				Get-ADUser $using:hdinsightCred.UserName | Move-ADObject -TargetPath $ou
+				Get-ADUser $json.HDIUserName | Move-ADObject -TargetPath $ou
 				Get-ADGroup 'hdinsightusers' | Move-ADObject -TargetPath $ou
 
 				# Add Reverse AD Zone
-				Add-DnsServerPrimaryZone -DynamicUpdate 'Secure' -NetworkId $using:dnsServerZone -ReplicationScope 'Forest'
+				Add-DnsServerPrimaryZone -DynamicUpdate 'Secure' -NetworkId $json.DNSHDIZone -ReplicationScope 'Forest'
 
 				$destination = "C:\Windows\Temp\PostConfiguration.txt"
 				New-Item -Force -Path $destination
