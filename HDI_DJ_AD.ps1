@@ -23,19 +23,22 @@ Configuration HDI_DJ_AD
 		[System.Management.Automation.PSCredential]$hdinsightCred
 	)
 	
-	Import-DscResource -ModuleName xActiveDirectory, xDnsServer, PSDesiredStateConfiguration
+	Import-DscResource -ModuleName xActiveDirectory, xNetworking, xDnsServer, PSDesiredStateConfiguration
 
 	[System.Management.Automation.PSCredential]$domainCred = New-Object System.Management.Automation.PSCredential("${$domainName}\$($adminCred.UserName)", $adminCred.Password)
 
 	[String[]]$groupMembers = $hdinsightCred.UserName
+
+	$Interface = Get-NetAdapter | Where Name -Like "Ethernet*" | Select-Object -First 1
+	$InterfaceAlias = $($Interface.Name)
 	
 	Node localhost
 	{
 		LocalConfigurationManager
-        {
-       	    ConfigurationMode = 'ApplyOnly'
-            RebootNodeIfNeeded = $true
-        }
+		{
+			ConfigurationMode = 'ApplyOnly'
+			RebootNodeIfNeeded = $true
+		}
 
 		Script AddADDSFeature {
 			SetScript = {
@@ -67,6 +70,14 @@ Configuration HDI_DJ_AD
 				return Test-Path -Path $destination
 			}
 		}
+		
+		xDnsServerAddress DnsServerAddress
+		{
+			Address = '127.0.0.1'
+			InterfaceAlias = $InterfaceAlias
+			AddressFamily = 'IPv4'
+			DependsOn = "[Script]AddADDSFeature"
+        }
 
 		xADDomain FirstDS
 		{
@@ -77,7 +88,7 @@ Configuration HDI_DJ_AD
 			DatabasePath = "F:\NTDS"
 			LogPath = "F:\NTDS"
 			SysvolPath = "F:\SYSVOL"
-			DependsOn = "[Script]AddADDSFeature"
+			DependsOn = "[xDnsServerAddress]DnsServerAddress"
 		}
 
 		Script AddCAFeature {
