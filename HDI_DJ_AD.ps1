@@ -177,14 +177,6 @@ Configuration HDI_DJ_AD
 				# Add Reverse AD Zone
 				Add-DnsServerPrimaryZone -DynamicUpdate 'Secure' -NetworkId $json.DNSHDIZone -ReplicationScope 'Forest'
 
-				# Add Conditional Forwarder Zone to Azure DNS
-				$settings = Get-DnsClientGlobalSetting
-				if ($settings.suffixSearchList.count -gt 0)
-				{
-					$azureDNS = @('168.63.129.16')
-					Add-DnsServerConditionalForwarderZone -MasterServers $azureDNS -Name ($settings.suffixSearchList[0]) -ReplicationScope 'Forest'
-				}
-
 				$destination = "C:\Windows\Temp\PostConfiguration.txt"
 				New-Item -Force -Path $destination
 			}
