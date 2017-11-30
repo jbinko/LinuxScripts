@@ -71,6 +71,7 @@ Configuration HDI_DJ_AD
 			}
 		}
 		
+		# http://www.rajinders.com/2014/11/29/dns-issue-while-setting-active-directory-in-azure-virtual-network/
 		xDnsServerAddress DnsServerAddress
 		{
 			Address = '127.0.0.1'
