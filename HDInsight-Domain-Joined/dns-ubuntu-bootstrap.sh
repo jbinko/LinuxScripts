@@ -43,8 +43,8 @@ bootstrap() {
   echo '   allow-query { goodclients; };' >> /etc/bind/named.conf.options
   echo '' >> /etc/bind/named.conf.options
   echo '   forwarders {' >> /etc/bind/named.conf.options
-  echo '      'IP_ADDR_ONPREM_DNS1'; # IP address of the on-premises DNS server 1' >> /etc/bind/named.conf.options
-  echo '      'IP_ADDR_ONPREM_DNS2'; # IP address of the on-premises DNS server 2' >> /etc/bind/named.conf.options
+  echo '      '$IP_ADDR_ONPREM_DNS1'; # IP address of the on-premises DNS server 1' >> /etc/bind/named.conf.options
+  echo '      '$IP_ADDR_ONPREM_DNS2'; # IP address of the on-premises DNS server 2' >> /etc/bind/named.conf.options
   echo '   };' >> /etc/bind/named.conf.options
   echo '' >> /etc/bind/named.conf.options
   echo '   dnssec-validation auto;' >> /etc/bind/named.conf.options
