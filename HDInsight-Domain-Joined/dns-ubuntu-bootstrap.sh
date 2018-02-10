@@ -5,7 +5,8 @@ set -e
 
 ADDR_RANGE_VNET="${1}"
 ADDR_RANGE_ONPREM="${2}"
-IP_ADDR_DNS_ONPREM="${3}"
+IP_ADDR_ONPREM_DNS1="${3}"
+IP_ADDR_ONPREM_DNS2="${4}"
 DNS_SUFFIX=$(hostname -d)
 
 log() {
@@ -42,7 +43,8 @@ bootstrap() {
   echo '   allow-query { goodclients; };' >> /etc/bind/named.conf.options
   echo '' >> /etc/bind/named.conf.options
   echo '   forwarders {' >> /etc/bind/named.conf.options
-  echo '      '$IP_ADDR_DNS_ONPREM'; # IP address of the on-premises DNS server' >> /etc/bind/named.conf.options
+  echo '      'IP_ADDR_ONPREM_DNS1'; # IP address of the on-premises DNS server 1' >> /etc/bind/named.conf.options
+  echo '      'IP_ADDR_ONPREM_DNS2'; # IP address of the on-premises DNS server 2' >> /etc/bind/named.conf.options
   echo '   };' >> /etc/bind/named.conf.options
   echo '' >> /etc/bind/named.conf.options
   echo '   dnssec-validation auto;' >> /etc/bind/named.conf.options
