@@ -3,8 +3,10 @@
 set -e
 [ "$DEBUG" == 'true' ] && set -x
 
-IP_ADDR_ONPREM_DNS1="${1}"
-IP_ADDR_ONPREM_DNS2="${2}"
+ADDR_RANGE_VNET="${1}"
+ADDR_RANGE_ONPREM="${2}"
+IP_ADDR_ONPREM_DNS1="${3}"
+IP_ADDR_ONPREM_DNS2="${4}"
 DNS_SUFFIX=$(hostname -d)
 
 log() {
@@ -27,7 +29,8 @@ bootstrap() {
 
   # Name resolution between a virtual network and a connected on-premises network
   echo 'acl goodclients {' > /etc/bind/named.conf.options
-  echo '   0.0.0.0/0; # Here is workaround - allow any' >> /etc/bind/named.conf.options
+  echo '   '$ADDR_RANGE_VNET'; # IP address range of the virtual network' >> /etc/bind/named.conf.options
+  echo '   '$ADDR_RANGE_ONPREM'; # IP address range of the on-premises network' >> /etc/bind/named.conf.options
   echo '   localhost;' >> /etc/bind/named.conf.options
   echo '   localnets;' >> /etc/bind/named.conf.options
   echo '};' >> /etc/bind/named.conf.options
