@@ -7,7 +7,11 @@ ADDR_RANGE_VNET="${1}"
 ADDR_RANGE_ONPREM="${2}"
 IP_ADDR_ONPREM_DNS1="${3}"
 IP_ADDR_ONPREM_DNS2="${4}"
-DNS_SUFFIX=$(hostname -d)
+if [ "$5" ]; then
+  DNS_SUFFIX="${5}"
+else
+  DNS_SUFFIX=$(hostname -d)
+fi
 
 log() {
   echo "`date +'[%Y-%m-%d %H:%M:%S:%N %Z]'` $1"
