@@ -24,8 +24,8 @@ bootstrap() {
 
   # install DNS server components
   apt-get update -y
-  apt-get install bind9 -y
-  apt-get install dnsutils
+  apt-get install bind9 dnsutils telnet -y
+  rm -rf /var/lib/apt/lists/*
 
   # backup original config files
   cp /etc/bind/named.conf.local /etc/bind/named.conf.local.orig
@@ -54,7 +54,7 @@ bootstrap() {
   echo '   dnssec-validation auto;' >> /etc/bind/named.conf.options
   echo '' >> /etc/bind/named.conf.options
   echo '   auth-nxdomain no; # conform to RFC1035' >> /etc/bind/named.conf.options
-  echo '   listen-on { any; };' >> /etc/bind/named.conf.options
+  echo '   listen-on port 53 { any; };' >> /etc/bind/named.conf.options
   echo '};' >> /etc/bind/named.conf.options
 
   # This configuration routes all DNS requests for the DNS suffix of the virtual network to the Azure recursive resolver.
